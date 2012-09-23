@@ -35,7 +35,7 @@
  lib-$(CONFIG_NTPD)         += ntpd.o
 --- /dev/null
 +++ b/networking/netmsg.c
-@@ -0,0 +1,65 @@
+@@ -0,0 +1,76 @@
 +/*
 + * Copyright (C) 2006 Felix Fietkau <nbd@openwrt.org>
 + *
@@ -62,7 +62,7 @@
 +	int s;
 +	struct sockaddr_in addr;
 +	int optval = 1;
-+	unsigned char buf[1001];
++	char buf[1001];
 +
 +	if (argc != 3) {
 +		fprintf(stderr, "usage: %s <ip> \"<message>\"\n", argv[0]);
@@ -76,27 +76,38 @@
 +
 +	memset(&addr, 0, sizeof(addr));
 +	addr.sin_family = AF_INET;
++	addr.sin_addr.s_addr = INADDR_ANY;
++	addr.sin_port = htons(0x1337);
++
++	if (bind(s, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
++		perror("bind()");
++		goto fail;
++	}
++
++	memset(&addr, 0, sizeof(addr));
++	addr.sin_family = AF_INET;
 +	addr.sin_addr.s_addr = inet_addr(argv[1]);
 +	addr.sin_port = htons(0x1337);
 +
-+	memset(buf, 0, 1001);
-+	buf[0] = 0xde;
-+	buf[1] = 0xad;
-+
-+	strncpy(buf + 2, argv[2], 998);
++	strncpy(buf, argv[2], 1000);
++	size_t len = strlen(argv[2]);
++	if (len > 1000) {
++		len = 1000;
++	}
++	buf[len++] = '\n';
 +
 +	if (setsockopt (s, SOL_SOCKET, SO_BROADCAST, (caddr_t) &optval, sizeof (optval)) < 0) {
 +		perror("setsockopt()");
 +		goto fail;
 +	}
 +
-+	if (sendto(s, buf, 1001, 0, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
++	if (sendto(s, buf, len, 0, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
 +		perror("sendto()");
 +		goto fail;
 +	}
 +
 +	return 0;
-+	
++
 +fail:
 +	close(s);
 +	exit(1);
