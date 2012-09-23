@@ -32,8 +32,8 @@ preinit_net_echo() {
 }
 
 preinit_echo() {
-	preinit_net_echo $1
-	echo $1
+	preinit_net_echo "$1"
+	echo "$1"
 }
 
 pi_indicate_led() {
@@ -41,7 +41,8 @@ pi_indicate_led() {
 }
 
 pi_indicate_preinit() {
-	preinit_net_echo "Doing OpenWRT Preinit\n"
+	echo "- preinit -"
+	preinit_net_echo "Doing OpenWRT Preinit"
 	pi_indicate_led
 }
 
