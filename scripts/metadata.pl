@@ -153,7 +153,8 @@ sub target_config_features(@) {
 	my $ret;
 
 	while ($_ = shift @_) {
-		/broken/ and $ret .= "\tdepends BROKEN\n";
+		/arm_v(\w+)/ and $ret .= "\tselect arm_v$1\n";
+		/broken/ and $ret .= "\tdepends on BROKEN\n";
 		/audio/ and $ret .= "\tselect AUDIO_SUPPORT\n";
 		/display/ and $ret .= "\tselect DISPLAY_SUPPORT\n";
 		/gpio/ and $ret .= "\tselect GPIO_SUPPORT\n";
@@ -164,7 +165,8 @@ sub target_config_features(@) {
 		/pcmcia/ and $ret .= "\tselect PCMCIA_SUPPORT\n";
 		/rtc/ and $ret .= "\tselect RTC_SUPPORT\n";
 		/squashfs/ and $ret .= "\tselect USES_SQUASHFS\n";
-		/jffs2/ and $ret .= "\tselect USES_JFFS2\n";
+		/jffs2$/ and $ret .= "\tselect USES_JFFS2\n";
+		/jffs2_nand/ and $ret .= "\tselect USES_JFFS2_NAND\n";
 		/ext4/ and $ret .= "\tselect USES_EXT4\n";
 		/targz/ and $ret .= "\tselect USES_TARGZ\n";
 		/cpiogz/ and $ret .= "\tselect USES_CPIOGZ\n";
@@ -174,6 +176,8 @@ sub target_config_features(@) {
 		/ramdisk/ and $ret .= "\tselect USES_INITRAMFS\n";
 		/powerpc64/ and $ret .= "\tselect powerpc64\n";
 		/nommu/ and $ret .= "\tselect NOMMU\n";
+		/mips16/ and $ret .= "\tselect HAS_MIPS16\n";
+		/rfkill/ and $ret .= "\tselect RFKILL_SUPPORT\n";
 	}
 	return $ret;
 }
@@ -229,11 +233,11 @@ config TARGET_$target->{conf}
 EOF
 	}
 	if ($target->{subtarget}) {
-		$confstr .= "\tdepends TARGET_$target->{boardconf}\n";
+		$confstr .= "\tdepends on TARGET_$target->{boardconf}\n";
 	}
 	if (@{$target->{subtargets}} > 0) {
 		$confstr .= "\tselect HAS_SUBTARGETS\n";
-		grep { /broken/ } @{$target->{features}} and $confstr .= "\tdepends BROKEN\n";
+		grep { /broken/ } @{$target->{features}} and $confstr .= "\tdepends on BROKEN\n";
 	} else {
 		$confstr .= $features;
 	}
@@ -242,7 +246,7 @@ EOF
 		$confstr .= "\tselect $target->{arch}\n";
 	}
 	foreach my $dep (@{$target->{depends}}) {
-		my $mode = "depends";
+		my $mode = "depends on";
 		my $flags;
 		my $name;
 
@@ -316,7 +320,7 @@ EOF
 			print <<EOF;
 config TARGET_$target->{conf}_$profile->{id}
 	bool "$profile->{name}"
-	depends TARGET_$target->{conf}
+	depends on TARGET_$target->{conf}
 $profile->{config}
 EOF
 			$profile->{kconfig} and print "\tselect PROFILE_KCONFIG\n";
@@ -438,11 +442,12 @@ sub mconf_depends {
 	my $parent_condition = shift;
 	$dep or $dep = {};
 	$seen or $seen = {};
+	my @t_depends;
 
 	$depends or return;
 	my @depends = @$depends;
 	foreach my $depend (@depends) {
-		my $m = "depends";
+		my $m = "depends on";
 		my $flags = "";
 		$depend =~ s/^([@\+]+)// and $flags = $1;
 		my $vdep;
@@ -450,6 +455,7 @@ sub mconf_depends {
 
 		next if $condition eq $depend;
 		next if $seen->{"$parent_condition:$depend"};
+		next if $seen->{":$depend"};
 		$seen->{"$parent_condition:$depend"} = 1;
 		if ($depend =~ /^(.+):(.+)$/) {
 			if ($1 ne "PACKAGE_$pkgname") {
@@ -470,7 +476,7 @@ sub mconf_depends {
 				# thus if FOO depends on other config options, these dependencies
 				# will not be checked. To fix this, we simply emit all of FOO's
 				# depends here as well.
-				$package{$depend} and mconf_depends($pkgname, $package{$depend}->{depends}, 1, $dep, $seen, $condition);
+				$package{$depend} and push @t_depends, [ $package{$depend}->{depends}, $condition ];
 
 				$m = "select";
 				next if $only_dep;
@@ -487,6 +493,11 @@ sub mconf_depends {
 		}
 		$dep->{$depend} =~ /select/ or $dep->{$depend} = $m;
 	}
+
+	foreach my $tdep (@t_depends) {
+		mconf_depends($pkgname, $tdep->[0], 1, $dep, $seen, $tdep->[1]);
+	}
+
 	foreach my $depend (keys %$dep) {
 		my $m = $dep->{$depend};
 		$res .= "\t\t$m $depend\n";
@@ -545,8 +556,13 @@ sub print_package_config_category($) {
 			$pkg->{hidden} and $title = "";
 			print "\t\t".($pkg->{tristate} ? 'tristate' : 'bool')." $title\n";
 			print "\t\tdefault y if DEFAULT_".$pkg->{name}."\n";
-			foreach my $default (split /\s*,\s*/, $pkg->{default}) {
-				print "\t\tdefault $default\n";
+			unless ($pkg->{hidden}) {
+				$pkg->{default} ||= "m if ALL";
+			}
+			if ($pkg->{default}) {
+				foreach my $default (split /\s*,\s*/, $pkg->{default}) {
+					print "\t\tdefault $default\n";
+				}
 			}
 			print mconf_depends($pkg->{name}, $pkg->{depends}, 0);
 			print mconf_depends($pkg->{name}, $pkg->{mdepends}, 0);
@@ -601,7 +617,7 @@ sub gen_package_config() {
 			print <<EOF
 	config UCI_PRECONFIG_$conf
 		string "$preconfig{$preconfig}->{$cfg}->{label}" if IMAGEOPT
-		depends PACKAGE_$preconfig
+		depends on PACKAGE_$preconfig
 		default "$preconfig{$preconfig}->{$cfg}->{default}"
 
 EOF
@@ -613,7 +629,7 @@ EOF
 	}
 	print_package_features();
 	print_package_config_category 'Base system';
-	foreach my $cat (keys %category) {
+	foreach my $cat (sort {uc($a) cmp uc($b)} keys %category) {
 		print_package_config_category $cat;
 	}
 }
@@ -754,7 +770,7 @@ sub gen_package_mk() {
 					$idx = $subdir{$dep}.$dep;
 				}
 				$idx .= $suffix;
-				undef $idx if $idx =~ /^(kernel)|(base-files)$/;
+				undef $idx if $idx eq 'base-files';
 				if ($idx) {
 					my $depline;
 					next if $pkg->{src} eq $pkg_dep->{src}.$suffix;

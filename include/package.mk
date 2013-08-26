@@ -13,6 +13,7 @@ PKG_BUILD_DIR ?= $(BUILD_DIR)/$(PKG_NAME)$(if $(PKG_VERSION),-$(PKG_VERSION))
 PKG_INSTALL_DIR ?= $(PKG_BUILD_DIR)/ipkg-install
 PKG_MD5SUM ?= unknown
 PKG_BUILD_PARALLEL ?=
+PKG_USE_MIPS16 ?= 1
 
 ifneq ($(CONFIG_PKG_BUILD_USE_JOBSERVER),)
   MAKE_J:=$(if $(MAKE_JOBSERVER),$(MAKE_JOBSERVER) -j)
@@ -25,6 +26,12 @@ PKG_JOBS?=-j1
 else
 PKG_JOBS?=$(if $(PKG_BUILD_PARALLEL)$(CONFIG_PKG_DEFAULT_PARALLEL),\
 	$(if $(CONFIG_PKG_BUILD_PARALLEL),$(MAKE_J),-j1),-j1)
+endif
+ifdef CONFIG_USE_MIPS16
+  ifeq ($(strip $(PKG_USE_MIPS16)),1)
+    TARGET_ASFLAGS_DEFAULT = $(filter-out -mips16 -minterlink-mips16,$(TARGET_CFLAGS))
+    TARGET_CFLAGS += -mips16 -minterlink-mips16
+  endif
 endif
 
 include $(INCLUDE_DIR)/prereq.mk
@@ -171,6 +178,11 @@ define Build/DefaultTargets
 	$(foreach hook,$(Hooks/InstallDev/Post),\
 		$(call $(hook),$(TMP_DIR)/stage-$(PKG_NAME),$(TMP_DIR)/stage-$(PKG_NAME)/host)$(sep)\
 	)
+	if [ -f $(STAGING_DIR)/packages/$(STAGING_FILES_LIST) ]; then \
+		$(SCRIPT_DIR)/clean-package.sh \
+			"$(STAGING_DIR)/packages/$(STAGING_FILES_LIST)" \
+			"$(STAGING_DIR)"; \
+	fi
 	if [ -d $(TMP_DIR)/stage-$(PKG_NAME) ]; then \
 		(cd $(TMP_DIR)/stage-$(PKG_NAME); find ./ > $(TMP_DIR)/stage-$(PKG_NAME).files); \
 		$(call locked, \

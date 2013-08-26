@@ -8,16 +8,16 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=hostapd
-PKG_VERSION:=20130302
+PKG_VERSION:=20130807
 PKG_RELEASE:=1
-PKG_REV:=a311c61dd664db7c1d16dd3395adf07bea6c141d
+PKG_REV:=d2ba3d6bd9336ef8fd761a0cc7999824d4c4da41
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
 PKG_SOURCE_URL:=git://w1.fi/srv/git/hostap.git
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 PKG_SOURCE_VERSION:=$(PKG_REV)
 PKG_SOURCE_PROTO:=git
-PKG_MIRROR_MD5SUM:=d81d1b073521df0c608f42e2cedec60c
+PKG_MIRROR_MD5SUM:=5dff9bc3b8fbd9ef8a66273d5adee5a3
 
 PKG_MAINTAINER:=Felix Fietkau <nbd@openwrt.org>
 
@@ -93,7 +93,7 @@ define Package/hostapd/Default
   CATEGORY:=Network
   TITLE:=IEEE 802.1x Authenticator
   URL:=http://hostap.epitest.fi/
-  DEPENDS:=$(DRV_DEPENDS)
+  DEPENDS:=$(DRV_DEPENDS) +libubus
 endef
 
 define Package/hostapd
@@ -138,7 +138,7 @@ endef
 define Package/wpad
 $(call Package/wpad/Default)
   TITLE+= (full)
-  DEPENDS:=$(DRV_DEPENDS) +WPA_SUPPLICANT_OPENSSL:libopenssl
+  DEPENDS:=$(DRV_DEPENDS) +WPA_SUPPLICANT_OPENSSL:libopenssl +libubus
   VARIANT:=wpad-full
 endef
 
@@ -150,7 +150,7 @@ endef
 define Package/wpad-mini
 $(call Package/wpad/Default)
   TITLE+= (WPA-PSK only)
-  DEPENDS:=$(DRV_DEPENDS)
+  DEPENDS:=$(DRV_DEPENDS) +libubus
   VARIANT:=wpad-mini
 endef
 
@@ -175,6 +175,17 @@ define Package/wpa-supplicant/config
 	source "$(SOURCE)/Config.in"
 endef
 
+define Package/wpa-supplicant-p2p
+  $(Package/wpa-supplicant)
+  TITLE:=WPA Supplicant (with Wi-Fi P2P support)
+  DEPENDS:=$(DRV_DEPENDS)
+  VARIANT:=supplicant-p2p
+endef
+
+define Package/wpa-supplicant-p2p/Description
+  WPA Supplicant (with Wi-Fi P2P support)
+endef
+
 define Package/wpa-supplicant-mini
   $(Package/wpa-supplicant)
   TITLE:=WPA Supplicant (minimal version)
@@ -189,7 +200,7 @@ endef
 define Package/wpa-cli
   SECTION:=net
   CATEGORY:=Network
-  DEPENDS:=@PACKAGE_wpa-supplicant||PACKAGE_wpad-mini||PACKAGE_wpad
+  DEPENDS:=@PACKAGE_wpa-supplicant||PACKAGE_wpa-supplicant-p2p||PACKAGE_wpad-mini||PACKAGE_wpad
   TITLE:=WPA Supplicant command line interface
 endef
 
@@ -210,7 +221,9 @@ endif
 
 define Build/Configure
 	$(Build/Configure/rebuild)
-	$(CP) ./files/hostapd-$(LOCAL_VARIANT).config $(PKG_BUILD_DIR)/hostapd/.config
+	$(if $(wildcard ./files/hostapd-$(LOCAL_VARIANT).config), \
+		$(CP) ./files/hostapd-$(LOCAL_VARIANT).config $(PKG_BUILD_DIR)/hostapd/.config \
+	)
 	$(CP) ./files/wpa_supplicant-$(LOCAL_VARIANT).config $(PKG_BUILD_DIR)/wpa_supplicant/.config
 endef
 
@@ -225,6 +238,9 @@ TARGET_CPPFLAGS := \
 
 TARGET_CFLAGS += -ffunction-sections -fdata-sections
 TARGET_LDFLAGS += -Wl,--gc-sections
+ifeq ($(findstring supplicant,$(BUILD_VARIANT)),)
+  TARGET_LDFLAGS += -lubox -lubus
+endif
 
 ifdef CONFIG_PACKAGE_kmod-mac80211
   TARGET_LDFLAGS += -lm -lnl-tiny
@@ -300,14 +316,9 @@ Package/hostapd-mini/install = $(Package/hostapd/install)
 
 ifneq ($(LOCAL_TYPE),supplicant)
   define Package/hostapd-utils/install
-	$(INSTALL_DIR) $(1)/usr/sbin $(1)/etc/hotplug.d/button
+	$(INSTALL_DIR) $(1)/usr/sbin $(1)/etc/rc.button
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/hostapd/hostapd_cli $(1)/usr/sbin/
-	$(INSTALL_DATA) ./files/wps-hotplug.sh $(1)/etc/hotplug.d/button/50-wps
-	$(if $(CONFIG_PROCD_INIT),
-		$(INSTALL_DIR) $(1)/etc/rc.button/
-		$(INSTALL_BIN) ./files/wps-hotplug.sh $(1)/etc/rc.button/wps,
-		$(INSTALL_DATA) ./files/wps-hotplug.sh $(1)/etc/hotplug.d/button/50-wps
-	)
+	$(INSTALL_BIN) ./files/wps-hotplug.sh $(1)/etc/rc.button/wps
   endef
 endif
 
@@ -325,6 +336,7 @@ define Package/wpa-supplicant/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/wpa_supplicant/wpa_supplicant $(1)/usr/sbin/
 endef
 Package/wpa-supplicant-mini/install = $(Package/wpa-supplicant/install)
+Package/wpa-supplicant-p2p/install = $(Package/wpa-supplicant/install)
 
 ifneq ($(LOCAL_TYPE),hostapd)
   define Package/wpa-cli/install
@@ -339,5 +351,6 @@ $(eval $(call BuildPackage,wpad))
 $(eval $(call BuildPackage,wpad-mini))
 $(eval $(call BuildPackage,wpa-supplicant))
 $(eval $(call BuildPackage,wpa-supplicant-mini))
+$(eval $(call BuildPackage,wpa-supplicant-p2p))
 $(eval $(call BuildPackage,wpa-cli))
 $(eval $(call BuildPackage,hostapd-utils))

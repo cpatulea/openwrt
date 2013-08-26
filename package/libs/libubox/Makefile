@@ -1,15 +1,15 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=libubox
-PKG_VERSION:=2013-03-05
+PKG_VERSION:=2013-08-01
 PKG_RELEASE=$(PKG_SOURCE_VERSION)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=git://nbd.name/luci2/libubox.git
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
-PKG_SOURCE_VERSION:=49e6e062b8effe281a85de167c16c5f039b74442
+PKG_SOURCE_VERSION:=04f194aa8a04926fe7f2e42bbf9ba6c62d49339e
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
-PKG_MIRROR_MD5SUM:=b32d297d846b271585925f190fad2c60
+PKG_MIRROR_MD5SUM:=
 CMAKE_INSTALL:=1
 
 PKG_LICENSE:=ISC BSD-3c
@@ -33,13 +33,13 @@ define Package/libblobmsg-json
   SECTION:=libs
   CATEGORY:=Libraries
   TITLE:=blobmsg <-> json conversion library
-  DEPENDS:=+libjson +libubox
+  DEPENDS:=+libjson-c +libubox
 endef
 
 define Package/jshn
   SECTION:=utils
   CATEGORY:=Utilities
-  DEPENDS:=+libjson
+  DEPENDS:=+libjson-c
   TITLE:=JSON SHell Notation
 endef
 

@@ -18,6 +18,9 @@ case $board in
 		set_wifi_led "edimax:amber:wlan"
 		set_usb_led "edimax:blue:3g"
 		;;
+	3g-6200nl)
+		set_wifi_led "edimax:green:wlan"
+		;;
 	3g300m)
 		set_usb_led "tenda:blue:3g"
 		;;
@@ -32,6 +35,12 @@ case $board in
 		ucidef_set_led_rssi "rssihigh" "RSSIHIGH" "all0256n:green:rssihigh" "wlan0" "70" "100" "-69" "8"
 		set_wifi_led "rt2800pci-phy0::radio"
 		;;
+	asl26555)
+		ucidef_set_led_default "power" "POWER" "asl26555:green:power" "1"
+		ucidef_set_led_netdev "eth" "ETH" "asl26555:green:eth" "eth0"
+		set_wifi_led "asl26555:green:wlan"
+		set_usb_led "asl26555:green:3g"
+		;;
 	bc2)
 		set_usb_led "bc2:blue:usb"
 		;;
@@ -44,6 +53,10 @@ case $board in
 		;;
 	br6524n)
 		set_wifi_led "edimax:blue:wlan"
+		;;
+	d105)
+		ucidef_set_led_default "power" "POWER" "d105:red:power" "1"
+		set_usb_led "d105:green:usb"
 		;;
 	dir-300-b1|\
 	dir-600-b1|\
@@ -58,6 +71,13 @@ case $board in
 		ucidef_set_led_default "status" "Status LED (amber)" "d-link:amber:status" "0"
 		set_wifi_led "rt2800pci-phy0::radio"
 		;;
+	dir-620-d1)
+		set_wifi_led "d-link:green:wifi"
+		;;
+	dir-810l)
+		ucidef_set_led_default "power" "POWER" "dlink:green:power" "1"
+		;;
+	dir-610-a1 |\
 	esr-9753)
 		set_wifi_led "rt2800pci-phy0::radio"
 		;;
@@ -77,6 +97,12 @@ case $board in
 		;;
 	mofi3500-3gn)
 		set_usb_led "mofi3500-3gn:green:usb"
+		;;
+	mpr-a1)
+		set_wifi_led "mpr-a1:blue:system"
+		;;
+	mpr-a2)
+		set_wifi_led "mpr-a2:blue:system"
 		;;
 	mzk-w300nh2)
 		set_wifi_led "mzkw300nh2:amber:wlan"
@@ -104,6 +130,18 @@ case $board in
 		;;
 	wcr-150gn)
 		set_usb_led "wcr150gn:amber:user"
+		;;
+	hg255d)
+    		set_wifi_led "hg255d:wlan"
+    		set_usb_led "hg255d:usb"
+    		ucidef_set_led_netdev "eth" "Internet" "hg255d:internet" "eth0.2"
+		;;
+	wnce2001)
+		set_wifi_led "netgear:green:wlan"
+		;;
+	rp-n53)
+		ucidef_set_led_netdev "eth" "Network" "asus:white:back" "eth0"
+		set_wifi_led "asus:blue:wifi"
 		;;
 esac
 

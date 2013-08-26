@@ -62,18 +62,34 @@ tplink_get_hwid() {
 	dd if=$part bs=4 count=1 skip=16 2>/dev/null | hexdump -v -n 4 -e '1/1 "%02x"'
 }
 
+tplink_get_mid() {
+	local part
+
+	part=$(find_mtd_part firmware)
+	[ -z "$part" ] && return 1
+
+	dd if=$part bs=4 count=1 skip=17 2>/dev/null | hexdump -v -n 4 -e '1/1 "%02x"'
+}
+
 tplink_board_detect() {
 	local model="$1"
 	local hwid
 	local hwver
 
 	hwid=$(tplink_get_hwid)
+	mid=$(tplink_get_mid)
 	hwver=${hwid:6:2}
 	hwver="v${hwver#0}"
 
 	case "$hwid" in
 	"070300"*)
 		model="TP-Link TL-WR703N"
+		;;
+	"071000"*)
+		model="TP-Link TL-WR710N"
+		;;
+	"072001"*)
+		model="TP-Link TL-WR720N"
 		;;
 	"070100"*)
 		model="TP-Link TL-WA701N/ND"
@@ -103,7 +119,12 @@ tplink_board_detect() {
 		model="TP-Link TL-WA901N/ND"
 		;;
 	"094100"*)
-		model="TP-Link TL-WR941N/ND"
+		if [ "$hwid" == "09410002" -a "$mid" == "00420001" ]; then
+			model="Rosewill RNX-N360RT"
+			hwver=""
+		else
+			model="TP-Link TL-WR941N/ND"
+		fi
 		;;
 	"104100"*)
 		model="TP-Link TL-WR1041N/ND"
@@ -114,7 +135,10 @@ tplink_board_detect() {
 	"254300"*)
 		model="TP-Link TL-WR2543N/ND"
 		;;
-	"110101"*)
+	"001001"*)
+		model="TP-Link TL-MR10U"
+		;;
+	"001101"*)
 		model="TP-Link TL-MR11U"
 		;;
 	"302000"*)
@@ -140,6 +164,9 @@ tplink_board_detect() {
 		;;
 	"431000"*)
 		model="TP-Link TL-WDR4310"
+		;;
+	"453000"*)
+		model="MERCURY MW4530R"
 		;;
 	*)
 		hwver=""
@@ -201,6 +228,9 @@ ar71xx_board_detect() {
 	*AP83)
 		name="ap83"
 		;;
+	*"Archer C7")
+		name="archer-c7"
+		;;
 	*"Atheros AP96")
 		name="ap96"
 		;;
@@ -212,6 +242,9 @@ ar71xx_board_detect() {
 		;;
 	*"DB120 reference board")
 		name="db120"
+		;;
+	*"DIR-505 rev. A1")
+		name="dir-505-a1"
 		;;
 	*"DIR-600 rev. A1")
 		name="dir-600-a1"
@@ -247,7 +280,16 @@ ar71xx_board_detect() {
 		name="jwap003"
 		;;
 	*"Hornet-UB")
-		name="hornet-ub"
+		local size
+		size=$(awk '/firmware/ { print $2 }' /proc/mtd)
+
+		if [ "x$size" = "x00790000" ]; then
+			name="hornet-ub"
+		fi
+
+		if [ "x$size" = "x00f90000" ]; then
+			name="hornet-ub-x2"
+		fi
 		;;
 	*LS-SR71)
 		name="ls-sr71"
@@ -329,6 +371,9 @@ ar71xx_board_detect() {
 		;;
 	*"RouterBOARD 2011L")
 		name="rb-2011l"
+		;;
+	*"RouterBOARD 2011UAS")
+		name="rb-2011uas"
 		;;
 	*"RouterBOARD 2011UAS-2HnD")
 		name="rb-2011uas-2hnd"
@@ -420,6 +465,15 @@ ar71xx_board_detect() {
 	*"TL-WR703N v1")
 		name="tl-wr703n"
 		;;
+	*"TL-WR710N v1")
+		name="tl-wr710n"
+		;;
+	*"TL-WR720N v3")
+		name="tl-wr720n-v3"
+		;;
+	*"TL-MR10U")
+		name="tl-mr10u"
+		;;
 	*"TL-MR11U")
 		name="tl-mr11u"
 		;;
@@ -447,14 +501,23 @@ ar71xx_board_detect() {
 	*WPE72)
 		name="wpe72"
 		;;
+	*WNDAP360)
+		name="wndap360"
+		;;
 	*"WNDR3700/WNDR3800/WNDRMAC")
 		wndr3700_board_detect "$machine"
 		;;
 	*"WNDR4300")
 		name="wndr4300"
 		;;
+	*"WNR2000 V3")
+		name="wnr2000-v3"
+		;;
 	*WNR2000)
 		name="wnr2000"
+		;;
+	*"WNR612 V2")
+		name="wnr612-v2"
 		;;
 	*WRT160NL)
 		name="wrt160nl"
@@ -488,6 +551,9 @@ ar71xx_board_detect() {
 		;;
 	*EmbWir-Dorin-Router)
 		name="ew-dorin-router"
+		;;
+	"8devices Carambola2"*)
+		name="carambola2"
 		;;
 	esac
 

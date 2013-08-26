@@ -9,11 +9,14 @@ get_status_led() {
 	3g-6200n)
 		status_led="edimax:green:power"
 		;;
-	3g300m)
+	3g300m | w150m)
 		status_led="tenda:blue:ap"
 		;;
 	argus-atp52b)
 		status_led="argus-atp52b:green:run"
+		;;
+	asl26555)
+		status_led="asl26555:green:power"
 		;;
 	br6524n)
 		status_led="edimax:blue:power"
@@ -21,7 +24,10 @@ get_status_led() {
 	br6425)
 		status_led="edimax:green:power"
 		;;
-	dir-300-b1 | dir-600-b1 | dir-600-b2 | dir-615-h1 | dir-615-d | dir-620-a1)
+	d105)
+		status_led="d105:red:power"
+		;;
+	dir-300-b1 | dir-600-b1 | dir-600-b2 | dir-610-a1 | dir-615-h1 | dir-615-d | dir-620-a1| dir-620-d1)
 		status_led="d-link:green:status"
 		;;
 	dir-645)
@@ -39,6 +45,9 @@ get_status_led() {
 	fonera20n)
 		status_led="fonera20n:green:power"
 		;;
+	ip2202)
+		status_led="ip2202:green:run"
+		;;
 	rt-n13u)
 		status_led="rt-n13u:power"
 		;;
@@ -46,8 +55,20 @@ get_status_led() {
 	hw550-3g)
 		status_led="hw550-3g:green:status"
 		;;
+	m3)
+		status_led="m3:blue:status"
+		;;
+	m4)
+		status_led="m4:blue:status"
+		;;
 	mofi3500-3gn)
 		status_led="mofi3500-3gn:green:status"
+		;;
+	mpr-a1)
+		status_led="mpr-a1:red:power"
+		;;
+	mpr-a2)
+		status_led="mpr-a2:red:power"
 		;;
 	nbg-419n)
 		status_led="nbg-419n:green:power"
@@ -108,6 +129,9 @@ get_status_led() {
 	wr512-3gn)
 		status_led="wr512:green:wps"
 		;;
+	wnce2001)
+		status_led="netgear:green:power"
+		;;
 	mzk-w300nh2)
 		status_led="mzkw300nh2:green:power"
 		;;
@@ -117,9 +141,18 @@ get_status_led() {
 	ur-336un)
 		status_led="ur336:green:wps"
 		;;
+	x5)
+		status_led="x5:green:power"
+		;;
+	x8)
+		status_led="x8:green:power"
+		;;
 	xdxrn502j)
 		status_led="xdxrn502j:green:power"
 		;;
+	f7c027)
+		status_led="belkin:orange:status"
+        ;;
 	esac
 }
 
@@ -128,7 +161,6 @@ set_state() {
 
 	case "$1" in
 	preinit)
-		insmod leds-gpio 2> /dev/null
 		status_led_blink_preinit
 		;;
 	failsafe)

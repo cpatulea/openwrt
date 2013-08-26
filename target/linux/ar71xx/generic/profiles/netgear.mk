@@ -5,6 +5,17 @@
 # See /LICENSE for more information.
 #
 
+define Profile/WNDAP360
+        NAME:=NETGEAR WNDAP360
+        PACKAGES:=
+endef
+
+define Profile/WNDAP360/Description
+        Package set optimized for the NETGEAR WNDAP360
+endef
+
+$(eval $(call Profile,WNDAP360))
+
 define Profile/WNDR3700
 	NAME:=NETGEAR WNDR3700/WNDR3800/WNDRMAC
 	PACKAGES:=kmod-usb-core kmod-usb-ohci kmod-usb2 kmod-ledtrig-usbdev kmod-leds-wndr3700-usb
@@ -28,3 +39,24 @@ endef
 
 $(eval $(call Profile,WNDR4300))
 
+
+define Profile/WNR2000V3
+	NAME:=NETGEAR WNR2000V3
+endef
+
+define Profile/WNR2000V3/Description
+	Package set optimized for the NETGEAR WNR2000V3
+endef
+
+$(eval $(call Profile,WNR2000V3))
+
+
+define Profile/WNR612V2
+	NAME:=NETGEAR WNR612V2
+endef
+
+define Profile/WNR612V2/Description
+	Package set optimized for the NETGEAR WNR612V2
+endef
+
+$(eval $(call Profile,WNR612V2))

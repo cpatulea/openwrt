@@ -8,22 +8,22 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=odhcp6c
-PKG_VERSION:=2013-03-08
+PKG_VERSION:=2013-07-03
 PKG_RELEASE=$(PKG_SOURCE_VERSION)
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 PKG_SOURCE_URL:=git://github.com/sbyx/odhcp6c.git
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=e8b07f018cbdf8f2a08f93af46904e7ffb9eb123
+PKG_SOURCE_VERSION:=007ae1a6ae8092878adccde1f610ea9dd86e5aad
 PKG_MAINTAINER:=Steven Barth <steven@midlink.org>
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/cmake.mk
 
 define Package/odhcp6c
-  SECTION:=ipv6
-  CATEGORY:=IPv6
+  SECTION:=net
+  CATEGORY:=Network
   TITLE:=Embedded DHCPv6-client for OpenWrt
   DEPENDS:=+kmod-ipv6
 endef

@@ -1,4 +1,4 @@
-# 
+#
 # Copyright (C) 2006-2011 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
@@ -119,6 +119,12 @@ define Image/Build/CFEOLD
 		-o $(BIN_DIR)/openwrt-$(2)-$(1)-cfe.bin
 endef
 
+define Image/Build/HCS
+	$(STAGING_DIR_HOST)/bin/hcsmakeimage --magic_byte=$(3) \
+		--rev_maj=$(4) --rev_min=$(5) --input_file=$(6) \
+		--output_file=$(BIN_DIR)/openwrt-$(2)-$(1).bin
+endef
+
 define Build/Clean
 	$(MAKE) -C lzma-loader clean
 endef
@@ -149,6 +155,11 @@ define Image/Prepare
 	rm -f $(KDIR)/fs_mark
 	touch $(KDIR)/fs_mark
 	$(call prepare_generic_squashfs,$(KDIR)/fs_mark)
+endef
+
+define Image/Build/Initramfs
+	# Netgear CVG834G
+	$(call Image/Build/HCS,initramfs,cvg834g,a020,0001,0022,$(KDIR)/vmlinux-initramfs)
 endef
 
 define Image/Build
@@ -203,8 +214,10 @@ define Image/Build
 	$(call Image/Build/CFEFIXUP,$(1),96348GW,GW6200,6348,GW6200,$(shell printf '\x99'))
 	# Neufbox4
 	$(call Image/Build/CFE,$(1),96358VW,6358,NEUFBOX4,OpenWRT-$(REVISION))
+
 	# Neufbox6
 	$(call Image/Build/CFE,$(1),NB6-SER-r0,6362,NEUFBOX6,OpenWRT-$(REVISION))
+
 	# Comtrend 6373
 	$(call Image/Build/CFE,$(1),CT6373-1,6358,CT6373)
 	# Comtrend 536, 5621
@@ -272,6 +285,13 @@ define Image/Build
 
 	# T-Com Speedport W 303V Typ B
 	$(call Image/Build/SPW303V,$(1),96358-502V,6358,SPW303V)
+
+	# Netgear CVG834G
+	$(call Image/Build/HCS,$(1),cvg834g,a020,0001,0022,$(KDIR)/vmlinux)
+
+  ifeq ($(CONFIG_TARGET_ROOTFS_INITRAMFS),y)
+	$(call Image/Build/Initramfs)
+  endif
 endef
 
 $(eval $(call BuildImage))

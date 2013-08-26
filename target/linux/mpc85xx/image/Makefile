@@ -25,7 +25,7 @@ endif
 
 zImage:=$(BIN_DIR)/$(IMG_PREFIX)-zImage$(IMAGE_SUFFIX)
 
-DTS_TARGETS = mpc8548cds_32b p1010rdb tl-wdr4900-v1
+DTS_TARGETS = mpc8548cds_32b p1010rdb tl-wdr4900-v1 p1020rdb
 BOOT_IMAGES:=zImage cuImage.tl-wdr4900-v1
 
 define Image/Prepare
@@ -35,7 +35,7 @@ define Image/Prepare
 endef
 
 define Image/BuildKernel
-	cp $(KDIR)/zImage $(zImage)
+	cp $(KDIR)/zImage$(IMAGE_SUFFIX) $(zImage)
 	$(foreach dts,$(DTS_TARGETS),
 		$(LINUX_DIR)/scripts/dtc/dtc -I dts -O dtb $(LINUX_DIR)/arch/powerpc/boot/dts/$(dts).dts > $(BIN_DIR)/$(IMG_PREFIX)-$(dts).fdt
 	)

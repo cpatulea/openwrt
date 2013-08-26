@@ -42,7 +42,7 @@
  			 "          -n ==> set image name to 'name'\n"
 --- a/tools/mkimage.h
 +++ b/tools/mkimage.h
-@@ -65,6 +65,7 @@
+@@ -79,6 +79,7 @@
  	int arch;
  	int type;
  	int comp;
