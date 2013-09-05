@@ -144,7 +144,7 @@ do_save_conffiles() {
 }
 
 if [ $CONF_BACKUP_LIST -eq 1 ]; then
-	add_uci_conffiles "$CONFFILES"
+	run_hooks "$CONFFILES" $sysupgrade_init_conffiles
 	cat "$CONFFILES"
 	rm -f "$CONFFILES"
 	exit 0
