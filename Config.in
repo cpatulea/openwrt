@@ -329,6 +329,12 @@ menu "Global build settings"
 		bool "Enable rfkill support"
 		default RFKILL_SUPPORT
 
+	config KERNEL_NETCONSOLE
+		bool "Enable netconsole"
+
+	config KERNEL_CMDLINE
+		string "Command line"
+
 	#
 	# CGROUP support symbols
 	#
