@@ -1,3 +1,1 @@
-CONFIG_NETCONSOLE=y
-CONFIG_NETPOLL_TRAP=n
-CONFIG_CMDLINE="rootfstype=squashfs,jffs2 noinitrd netconsole=@192.168.1.1/eth0,4919@192.168.1.255/"
+CONFIG_CMDLINE="rootfstype=squashfs,jffs2 noinitrd"
