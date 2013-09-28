@@ -332,6 +332,10 @@ menu "Global build settings"
 	config KERNEL_NETCONSOLE
 		bool "Enable netconsole"
 
+	config KERNEL_NETPOLL
+		bool "Enable netpoll (for netconsole)"
+		default y
+
 	config KERNEL_CMDLINE
 		string "Command line"
 
