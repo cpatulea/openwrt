@@ -138,6 +138,10 @@ config KERNEL_NETPOLL
 	bool "Enable netpoll (for netconsole)"
 	default y
 
+config KERNEL_NETPOLL_TRAP
+	bool "Enable netpoll trap (for netconsole)"
+	default y
+
 config KERNEL_CMDLINE
 	string "Command line"
 
