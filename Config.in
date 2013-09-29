@@ -340,6 +340,30 @@ menu "Global build settings"
 		bool "Enable netpoll trap (for netconsole)"
 		default y
 
+	config KERNEL_KGDB
+		bool "Enable KGDB"
+		default y
+
+	config KERNEL_KGDB_SERIAL_CONSOLE
+		bool "Enable KGDB_SERIAL_CONSOLE"
+		default y
+
+	config KERNEL_SERIAL_KGDB_NMI
+		bool "Enable SERIAL_KGDB_NMI"
+		default n
+
+	config KERNEL_KGDB_KDB
+		bool "Enable KGDB_KDB"
+		default n
+
+	config KERNEL_KGDB_LOW_LEVEL_TRAP
+		bool "Enable KGDB_LOW_LEVEL_TRAP"
+		default n
+
+	config KERNEL_KGDB_TESTS
+		bool "Enable KGDB_TESTS"
+		default n
+
 	config KERNEL_CMDLINE
 		string "Command line"
 
