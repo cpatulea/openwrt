@@ -6,6 +6,7 @@
  *  by the Free Software Foundation.
  */
 
+#include <linux/async.h>
 #include <linux/init.h>
 #include <linux/spi/spi.h>
 #include <linux/spi/flash.h>
@@ -59,15 +60,20 @@ void __init ath79_register_m25p80(struct flash_platform_data *pdata)
 static struct flash_platform_data *multi_pdata;
 
 static struct mtd_info *concat_devs[2] = { NULL, NULL };
-static struct work_struct mtd_concat_work;
 
-static void mtd_concat_add_work(struct work_struct *work)
+static void mtd_concat_add_async(void *unused_data,
+				 async_cookie_t unused_cookie)
 {
+	/* don't try to load partition parser modules, module loading is
+	 * disallowed in async */
+	const char *types[] = {NULL};
+
 	struct mtd_info *mtd;
 
 	mtd = mtd_concat_create(concat_devs, ARRAY_SIZE(concat_devs), "flash");
 
-	mtd_device_register(mtd, multi_pdata->parts, multi_pdata->nr_parts);
+	mtd_device_parse_register(mtd, types, NULL, multi_pdata->parts,
+				  multi_pdata->nr_parts);
 }
 
 static void mtd_concat_add(struct mtd_info *mtd)
@@ -88,8 +94,9 @@ static void mtd_concat_add(struct mtd_info *mtd)
 		return;
 
 	registered = true;
-	INIT_WORK(&mtd_concat_work, mtd_concat_add_work);
-	schedule_work(&mtd_concat_work);
+
+	/* make sure we complete before prepare_namespace looks for rootfs */
+	async_schedule(&mtd_concat_add_async, NULL);
 }
 
 static void mtd_concat_remove(struct mtd_info *mtd)
