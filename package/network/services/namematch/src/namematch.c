@@ -15,7 +15,7 @@
 
 #define ARRAY_SIZE(a) (sizeof(a)/sizeof((a)[0]))
 
-static const char *dests[5];
+static const char *hosts[5];
 
 static int cb(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
               struct nfq_data *nfa, void *data) {
@@ -36,15 +36,15 @@ static int cb(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
     struct iphdr *iph = (struct iphdr *)pkt;
 
     if (iph->version == 4) {
-      struct in_addr daddr = {.s_addr = iph->daddr};
-      printf("dest: %s\n", inet_ntoa(daddr));
+      struct in_addr haddr = {.s_addr = iph->saddr};
+      printf("host: %s\n", inet_ntoa(haddr));
 
-      for (const char **dest = dests; *dest; ++dest) {
-        printf("trying %s\n", *dest);
-        struct hostent *he = gethostbyname(*dest);
+      for (const char **host = hosts; *host; ++host) {
+        printf("trying %s\n", *host);
+        struct hostent *he = gethostbyname(*host);
         if (he) {
           for (char **alp = he->h_addr_list; *alp; ++alp) {
-            if (((struct in_addr *)*alp)->s_addr == daddr.s_addr) {
+            if (((struct in_addr *)*alp)->s_addr == haddr.s_addr) {
               printf("ok\n");
               verdict = NF_ACCEPT;
               break;
@@ -66,7 +66,7 @@ static int cb(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
 }
 
 static void usage() {
-  fprintf(stderr, "Usage: namematch [-d dest_hostname ...]\n");
+  fprintf(stderr, "Usage: namematch [-h dest_hostname ...]\n");
 }
 
 int main(int argc, char **argv) {
@@ -77,16 +77,16 @@ int main(int argc, char **argv) {
   int opt;
   char buf[4096] __attribute__((aligned));
 
-  size_t dptr = 0;
-  while ((opt = getopt(argc, argv, "d:")) != -1) {
+  size_t hptr = 0;
+  while ((opt = getopt(argc, argv, "h:")) != -1) {
     switch (opt) {
-    case 'd':
-      if (dptr >= ARRAY_SIZE(dests) - 1) {
-        fprintf(stderr, "Too many destinations (max %ld).\n",
-                ARRAY_SIZE(dests) - 1);
+    case 'h':
+      if (hptr >= ARRAY_SIZE(hosts) - 1) {
+        fprintf(stderr, "Too many hosts (max %d).\n",
+                ARRAY_SIZE(hosts) - 1);
         return 1;
       }
-      dests[dptr++] = optarg;
+      hosts[hptr++] = optarg;
       break;
     default:
       fprintf(stderr, "Unknown option '%c'.\n\n", opt);
@@ -95,10 +95,10 @@ int main(int argc, char **argv) {
     }
   }
 
-  if (dptr == 0) {
+  if (hptr == 0) {
     fprintf(stderr, "warning: no allowed destinations, dropping all packets\n");
   }
-  dests[dptr++] = NULL;
+  hosts[hptr++] = NULL;
 
   if (optind != argc) {
     fprintf(stderr, "Don't pass any arguments after options.\n\n");
@@ -122,10 +122,6 @@ int main(int argc, char **argv) {
 
   const uint32_t kCopyRange = sizeof(struct iphdr);
   rv = nfq_set_mode(qh, NFQNL_COPY_PACKET, kCopyRange);
-  assert (rv == 0);
-
-  int nobody = getpwnam("nobody")->pw_uid;
-  // rv = setresuid(nobody, nobody, nobody);
   assert (rv == 0);
 
   fd = nfq_fd(h);
