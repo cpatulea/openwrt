@@ -1,3 +1,12 @@
+/*
+iptables -t nat -A prerouting_wan_rule -p udp --dport 5060 -j DNAT --to 192.168.1.6
+
+iptables -N namematch
+iptables -A namematch -m mark --mark 0 -j QUEUE
+iptables -A namematch -m mark --mark 1 -j REJECT --reject-with icmp-admin-prohibited
+
+iptables -A forwarding_wan_rule -p udp --dport 5060 -j namematch
+*/
 #define _GNU_SOURCE
 #include <assert.h>
 #include <stdio.h>
