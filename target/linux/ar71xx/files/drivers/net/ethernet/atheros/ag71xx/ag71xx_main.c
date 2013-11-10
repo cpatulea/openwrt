@@ -121,7 +121,7 @@ static int ag71xx_ring_alloc(struct ag71xx_ring *ring)
 	ring->buf = kzalloc(ring->size * sizeof(*ring->buf), GFP_KERNEL);
 	if (!ring->buf) {
 		err = -ENOMEM;
-		goto err;
+		goto err_dma_free;
 	}
 
 	for (i = 0; i < ring->size; i++) {
@@ -133,6 +133,9 @@ static int ag71xx_ring_alloc(struct ag71xx_ring *ring)
 
 	return 0;
 
+err_dma_free:
+	dma_free_coherent(NULL, ring->size * ring->desc_size, ring->descs_cpu,
+			  ring->descs_dma);
 err:
 	return err;
 }
