@@ -31,7 +31,7 @@ static int cb(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
   int len = nfq_get_payload(nfa, &pkt);
   printf("id %d: got %d bytes payload\n", id, len);
 
-  u_int32_t verdict = NF_DROP;
+  u_int32_t verdict = NF_REPEAT;  /* by default, just mark so we can REJECT */
   if (len >= (signed)sizeof(struct iphdr)) {
     struct iphdr *iph = (struct iphdr *)pkt;
 
@@ -58,7 +58,7 @@ static int cb(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
   }
 
   int rv;
-  rv = nfq_set_verdict2(qh, id, verdict, 0, 0, NULL);
+  rv = nfq_set_verdict2(qh, id, verdict, 1, 0, NULL);
   fprintf(stderr, "set_verdict2: %d\n", rv);
   assert (rv >= 0);
 
