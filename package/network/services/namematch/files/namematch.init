@@ -1,0 +1,46 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2006-2010 OpenWrt.org
+# Copyright (C) 2006 Carlos Sobrinho
+# Copyright (C) 2013 Catalin Patulea
+
+START=50
+STOP=50
+
+USE_PROCD=1
+
+NAME=namematch
+PROG=/sbin/namematch
+
+namematch_instance()
+{
+  local section="$1"
+
+  # check if section is enabled (default)
+  local enabled
+  config_get_bool enabled "${section}" enable 1
+  [ "${enabled}" -eq 0 ] && return 1
+
+  procd_open_instance
+  procd_set_param command "$PROG" $hosts
+
+  add_host() {
+    procd_append_param command "-h"
+    procd_append_param command "$1"
+  }
+  config_list_foreach "${section}" hosts add_host
+
+  procd_close_instance
+}
+
+start_service()
+{
+  . /lib/functions.sh
+
+  config_load "${NAME}"
+  config_foreach namematch_instance namematch
+}
+
+service_triggers()
+{
+  procd_add_config_trigger "namematch" "/etc/init.d/namematch" "restart"
+}
