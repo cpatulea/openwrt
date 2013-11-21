@@ -27,6 +27,11 @@ endef
 define Package/namematch/install
 	$(INSTALL_DIR) $(1)/sbin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/namematch $(1)/sbin/
+
+	$(INSTALL_DIR) $(1)/etc/config
+	$(INSTALL_DATA) ./files/namematch.config $(1)/etc/config/namematch
+	$(INSTALL_DIR) $(1)/etc/init.d
+	$(INSTALL_BIN) ./files/namematch.init $(1)/etc/init.d/namematch
 endef
 
 $(eval $(call BuildPackage,namematch))
