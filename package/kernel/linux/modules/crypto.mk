@@ -7,12 +7,13 @@
 
 CRYPTO_MENU:=Cryptographic API modules
 
-CRYPTO_MODULES = ALGAPI2=crypto_algapi
+CRYPTO_MODULES = \
+	ALGAPI2=crypto_algapi \
+	BLKCIPHER2=crypto_blkcipher
 
 CRYPTOMGR_MODULES = \
 	AEAD2=aead \
 	MANAGER2=cryptomgr \
-	BLKCIPHER2=crypto_blkcipher
 
 crypto_confvar=CONFIG_CRYPTO_$(word 1,$(subst =,$(space),$(1)))
 crypto_file=$(LINUX_DIR)/crypto/$(word 2,$(subst =,$(space),$(1))).ko
@@ -24,10 +25,10 @@ define KernelPackage/crypto-core
   KCONFIG:= \
 	CONFIG_CRYPTO=y \
 	CONFIG_CRYPTO_HW=y \
+	CONFIG_CRYPTO_BLKCIPHER \
 	CONFIG_CRYPTO_ALGAPI \
 	$(foreach mod,$(CRYPTO_MODULES),$(call crypto_confvar,$(mod)))
   FILES:=$(foreach mod,$(CRYPTO_MODULES),$(call crypto_file,$(mod)))
-  AUTOLOAD:=$(call AutoLoad,01,$(foreach mod,$(CRYPTO_MODULES),$(call crypto_name,$(mod))),1)
 endef
 
 $(eval $(call KernelPackage,crypto-core))
@@ -40,7 +41,7 @@ endef
 
 define KernelPackage/crypto-hash
   TITLE:=CryptoAPI hash support
-  KCONFIG:=CONFIG_CRYPTO_HASH2
+  KCONFIG:=CONFIG_CRYPTO_HASH
   FILES:=$(LINUX_DIR)/crypto/crypto_hash.ko
   AUTOLOAD:=$(call AutoLoad,02,crypto_hash,1)
   $(call AddDepends/crypto)
@@ -54,11 +55,9 @@ define KernelPackage/crypto-manager
   DEPENDS:=+kmod-crypto-hash +kmod-crypto-pcompress
   KCONFIG:= \
 	CONFIG_CRYPTO_AEAD \
-	CONFIG_CRYPTO_BLKCIPHER \
 	CONFIG_CRYPTO_MANAGER \
 	$(foreach mod,$(CRYPTOMGR_MODULES),$(call crypto_confvar,$(mod)))
   FILES:=$(foreach mod,$(CRYPTOMGR_MODULES),$(call crypto_file,$(mod)))
-  AUTOLOAD:=$(call AutoLoad,03,$(foreach mod,$(CRYPTOMGR_MODULES),$(call crypto_name,$(mod))))
   $(call AddDepends/crypto)
 endef
 
@@ -207,6 +206,28 @@ endef
 $(eval $(call KernelPackage,crypto-hw-ppc4xx))
 
 
+define KernelPackage/crypto-hw-omap
+  TITLE:=TI OMAP hardware crypto modules
+  DEPENDS:=@TARGET_omap
+  KCONFIG:= \
+	CONFIG_CRYPTO_DEV_OMAP_AES \
+	CONFIG_CRYPTO_DEV_OMAP_DES \
+	CONFIG_CRYPTO_DEV_OMAP_SHAM
+  FILES:= \
+	$(LINUX_DIR)/drivers/crypto/omap-aes.ko \
+	$(LINUX_DIR)/drivers/crypto/omap-des.ko \
+	$(LINUX_DIR)/drivers/crypto/omap-sham.ko
+  AUTOLOAD:=$(call AutoLoad,90,omap-aes omap-des omap-sham)
+  $(call AddDepends/crypto,+kmod-crypto-manager +kmod-crypto-hash)
+endef
+
+define KernelPackage/crypto-hw-omap/description
+  Kernel support for the TI OMAP HW crypto engine.
+endef
+
+$(eval $(call KernelPackage,crypto-hw-omap))
+
+
 define KernelPackage/crypto-aes
   TITLE:=AES cipher CryptoAPI module
   KCONFIG:=CONFIG_CRYPTO_AES CONFIG_CRYPTO_AES_586
@@ -217,7 +238,7 @@ endef
 
 define KernelPackage/crypto-aes/x86
   FILES+=$(LINUX_DIR)/arch/x86/crypto/aes-i586.ko
-  AUTOLOAD:=$(call AutoLoad,09,aes_generic aes-i586)
+  AUTOLOAD:=$(call AutoLoad,09,aes-i586)
 endef
 
 $(eval $(call KernelPackage,crypto-aes))
@@ -228,7 +249,7 @@ define KernelPackage/crypto-arc4
   KCONFIG:=CONFIG_CRYPTO_ARC4
   FILES:=$(LINUX_DIR)/crypto/arc4.ko
   AUTOLOAD:=$(call AutoLoad,09,arc4)
-  $(call AddDepends/crypto,+!LINUX_3_3:kmod-crypto-manager)
+  $(call AddDepends/crypto)
 endef
 
 $(eval $(call KernelPackage,crypto-arc4))

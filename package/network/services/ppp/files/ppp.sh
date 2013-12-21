@@ -55,7 +55,7 @@ ppp_generic_setup() {
 		ip-down-script /lib/netifd/ppp-down \
 		ipv6-down-script /lib/netifd/ppp-down \
 		${mtu:+mtu $mtu mru $mtu} \
-		$pppd_options "$@"
+		"$@" $pppd_options
 }
 
 ppp_generic_teardown() {
@@ -190,7 +190,7 @@ proto_pptp_setup() {
 
 	local load
 	for module in slhc ppp_generic ppp_async ppp_mppe ip_gre gre pptp; do
-		grep -q "$module" /proc/modules && continue
+		grep -q "^$module " /proc/modules && continue
 		/sbin/insmod $module 2>&- >&-
 		load=1
 	done

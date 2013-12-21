@@ -44,7 +44,6 @@ define Host/Compile
 	$(call cc,pc1crypt)
 	$(call cc,osbridge-crc)
 	$(call cc,wrt400n cyg_crc32)
-	$(call cc,wndr3700)
 	$(call cc,mkdniimg)
 	$(call cc,mktitanimg)
 	$(call cc,mkchkimg)
@@ -65,6 +64,7 @@ define Host/Compile
 	$(call cc,fix-u-media-header cyg_crc32,-Wall)
 	$(call cc,hcsmakeimage bcmalgo)
 	$(call cc,mkporayfw, -Wall)
+	$(call cc,mkdcs932, -Wall)
 endef
 
 define Host/Install

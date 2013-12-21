@@ -54,21 +54,14 @@ endif
 
 HOST_FPIC:=-fPIC
 
-ARCH_SUFFIX:=
+ARCH_SUFFIX:=$(call qstrip,$(CONFIG_CPU_TYPE))
 GCC_ARCH:=
 
+ifneq ($(ARCH_SUFFIX),)
+  ARCH_SUFFIX:=_$(ARCH_SUFFIX)
+endif
 ifneq ($(filter -march=armv%,$(TARGET_OPTIMIZATION)),)
-  ARCH_SUFFIX:=_$(patsubst -march=arm%,%,$(filter -march=armv%,$(TARGET_OPTIMIZATION)))
   GCC_ARCH:=$(patsubst -march=%,%,$(filter -march=armv%,$(TARGET_OPTIMIZATION)))
-endif
-ifneq ($(filter -mips%r2,$(TARGET_OPTIMIZATION)),)
-  ARCH_SUFFIX:=_r2
-endif
-ifneq ($(filter -mdsp,$(TARGET_OPTIMIZATION)),)
-  ARCH_SUFFIX:=$(ARCH_SUFFIX)_dsp
-endif
-ifneq ($(filter -mdspr2,$(TARGET_OPTIMIZATION)),)
-  ARCH_SUFFIX:=$(ARCH_SUFFIX)_dspr2
 endif
 ifdef CONFIG_HAS_SPE_FPU
   TARGET_SUFFIX:=$(TARGET_SUFFIX)spe
@@ -80,7 +73,7 @@ ifdef CONFIG_MIPS64_ABI
 endif
 
 DL_DIR:=$(if $(call qstrip,$(CONFIG_DOWNLOAD_FOLDER)),$(call qstrip,$(CONFIG_DOWNLOAD_FOLDER)),$(TOPDIR)/dl)
-BIN_DIR:=$(TOPDIR)/bin/$(BOARD)
+BIN_DIR:=$(if $(call qstrip,$(CONFIG_BINARY_FOLDER)),$(call qstrip,$(CONFIG_BINARY_FOLDER)),$(TOPDIR)/bin/$(BOARD))
 INCLUDE_DIR:=$(TOPDIR)/include
 SCRIPT_DIR:=$(TOPDIR)/scripts
 BUILD_DIR_BASE:=$(TOPDIR)/build_dir
@@ -175,9 +168,16 @@ TARGET_PATH_PKG:=$(STAGING_DIR)/host/bin:$(TARGET_PATH)
 
 ifeq ($(CONFIG_SOFT_FLOAT),y)
   SOFT_FLOAT_CONFIG_OPTION:=--with-float=soft
-  TARGET_CFLAGS+= -msoft-float
+  ifeq ($(CONFIG_arm),y)
+    TARGET_CFLAGS+= -mfloat-abi=soft
+  else
+    TARGET_CFLAGS+= -msoft-float
+  endif
 else
   SOFT_FLOAT_CONFIG_OPTION:=
+  ifeq ($(CONFIG_arm),y)
+    TARGET_CFLAGS+= -mfloat-abi=hard
+  endif
 endif
 
 export PATH:=$(TARGET_PATH)

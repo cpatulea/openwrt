@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=iproute2
-PKG_VERSION:=3.10.0
+PKG_VERSION:=3.11.0
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=http://kernel.org/pub/linux/utils/net/iproute2/
-PKG_MD5SUM:=45fb5427fc723a0001c72b92c931ba02
+PKG_MD5SUM:=d7ffb27bc9f0d80577b1f3fb9d1a7689
 PKG_BUILD_PARALLEL:=1
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/iproute2-$(PKG_VERSION)
@@ -69,10 +69,15 @@ ifdef CONFIG_USE_EGLIBC
   endif
 endif
 
+TARGET_CFLAGS += -ffunction-sections -fdata-sections
+
 MAKE_FLAGS += \
 	EXTRA_CCOPTS="$(TARGET_CFLAGS) -I../include -I$(STAGING_DIR)/usr/include/libnl-tiny" \
 	KERNEL_INCLUDE="$(LINUX_DIR)/include" \
-	FPIC="$(FPIC)"
+	SHARED_LIBS="" \
+	LDFLAGS="-Wl,--gc-sections" \
+	IP_CONFIG_TINY=y \
+	FPIC=""
 
 define Build/Compile
 	+$(MAKE_VARS) $(MAKE) $(PKG_JOBS) -C $(PKG_BUILD_DIR) $(MAKE_FLAGS)

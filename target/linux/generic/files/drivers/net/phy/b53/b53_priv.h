@@ -47,6 +47,11 @@ enum {
 	BCM53115_DEVICE_ID = 0x53115,
 	BCM53125_DEVICE_ID = 0x53125,
 	BCM63XX_DEVICE_ID = 0x6300,
+	BCM53010_DEVICE_ID = 0x53010,
+	BCM53011_DEVICE_ID = 0x53011,
+	BCM53012_DEVICE_ID = 0x53012,
+	BCM53018_DEVICE_ID = 0x53018,
+	BCM53019_DEVICE_ID = 0x53019,
 };
 
 #define B53_N_PORTS	9
@@ -122,6 +127,13 @@ static inline int is5397_98(struct b53_device *dev)
 		dev->chip_id == BCM5398_DEVICE_ID;
 }
 
+static inline int is539x(struct b53_device *dev)
+{
+	return dev->chip_id == BCM5395_DEVICE_ID ||
+		dev->chip_id == BCM5397_DEVICE_ID ||
+		dev->chip_id == BCM5398_DEVICE_ID;
+}
+
 static inline int is531x5(struct b53_device *dev)
 {
 	return dev->chip_id == BCM53115_DEVICE_ID ||
@@ -135,6 +147,15 @@ static inline int is63xx(struct b53_device *dev)
 #else
 	return 0;
 #endif
+}
+	
+static inline int is5301x(struct b53_device *dev)
+{
+	return dev->chip_id == BCM53010_DEVICE_ID ||
+		dev->chip_id == BCM53011_DEVICE_ID ||
+		dev->chip_id == BCM53012_DEVICE_ID ||
+		dev->chip_id == BCM53018_DEVICE_ID ||
+		dev->chip_id == BCM53019_DEVICE_ID;
 }
 
 #define B53_CPU_PORT_25	5
@@ -279,14 +300,22 @@ static inline int b53_write64(struct b53_device *dev, u8 page, u8 reg,
 #ifdef CONFIG_BCM47XX
 
 #include <bcm47xx_nvram.h>
+#include <bcm47xx_board.h>
 static inline int b53_switch_get_reset_gpio(struct b53_device *dev)
 {
-       return bcm47xx_nvram_gpio_pin("robo_reset");
+	enum bcm47xx_board board = bcm47xx_board_get();
+
+	switch (board) {
+	case BCM47XX_BOARD_LINKSYS_WRT310NV1:
+		return 8;
+	default:
+		return bcm47xx_nvram_gpio_pin("robo_reset");
+	}
 }
 #else
 static inline int b53_switch_get_reset_gpio(struct b53_device *dev)
 {
-       return -ENOENT;
+	return -ENOENT;
 }
 #endif
 #endif

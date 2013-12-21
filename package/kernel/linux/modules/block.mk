@@ -28,7 +28,6 @@ define KernelPackage/ata-core
   DEPENDS:=@PCI_SUPPORT +kmod-scsi-core
   KCONFIG:=CONFIG_ATA
   FILES:=$(LINUX_DIR)/drivers/ata/libata.ko
-  AUTOLOAD:=$(call AutoLoad,21,libata,1)
 endef
 
 $(eval $(call KernelPackage,ata-core))
@@ -70,6 +69,25 @@ define KernelPackage/ata-artop/description
 endef
 
 $(eval $(call KernelPackage,ata-artop))
+
+
+define KernelPackage/ata-imx
+  TITLE:=Freescale i.MX AHCI SATA support
+  DEPENDS:=@TARGET_imx6
+  KCONFIG:=\
+	CONFIG_AHCI_IMX \
+	CONFIG_SATA_AHCI_PLATFORM \
+	CONFIG_PATA_IMX=n
+  FILES:=$(LINUX_DIR)/drivers/ata/ahci_imx.ko
+  AUTOLOAD:=$(call AutoLoad,41,ahci_imx,1)
+  $(call AddDepends/ata)
+endef
+
+define KernelPackage/ata-imx/description
+ SATA support for the Freescale i.MX6 SoC's onboard AHCI SATA
+endef
+
+$(eval $(call KernelPackage,ata-imx))
 
 
 define KernelPackage/ata-marvell-sata
@@ -376,9 +394,6 @@ define KernelPackage/ide-core
   FILES:= \
 	$(LINUX_DIR)/drivers/ide/ide-core.ko \
 	$(LINUX_DIR)/drivers/ide/ide-gd_mod.ko
-  AUTOLOAD:= \
-	$(call AutoLoad,20,ide-core,1) \
-	$(call AutoLoad,40,ide-gd_mod,1)
 endef
 
 define KernelPackage/ide-core/description
@@ -552,7 +567,7 @@ define KernelPackage/scsi-core
   FILES:= \
 	$(if $(findstring y,$(CONFIG_SCSI)),,$(LINUX_DIR)/drivers/scsi/scsi_mod.ko) \
 	$(LINUX_DIR)/drivers/scsi/sd_mod.ko
-  AUTOLOAD:=$(call AutoLoad,20,scsi_mod,1) $(call AutoLoad,40,sd_mod,1)
+  AUTOLOAD:=$(call AutoLoad,40,sd_mod,1)
 endef
 
 $(eval $(call KernelPackage,scsi-core))
@@ -582,7 +597,7 @@ define KernelPackage/scsi-cdrom
   FILES:= \
     $(LINUX_DIR)/drivers/cdrom/cdrom.ko \
     $(LINUX_DIR)/drivers/scsi/sr_mod.ko
-  AUTOLOAD:=$(call AutoLoad,30,cdrom) $(call AutoLoad,45,sr_mod)
+  AUTOLOAD:=$(call AutoLoad,45,sr_mod)
 endef
 
 $(eval $(call KernelPackage,scsi-cdrom))

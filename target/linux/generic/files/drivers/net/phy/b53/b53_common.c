@@ -188,8 +188,14 @@ static void b53_set_vlan_entry(struct b53_device *dev, u16 vid, u16 members,
 	if (is5325(dev)) {
 		u32 entry = 0;
 
-		if (members)
-			entry = (untag << VA_UNTAG_S) | members | VA_VALID_25;
+		if (members) {
+			entry = ((untag & VA_UNTAG_MASK_25) << VA_UNTAG_S_25) |
+				members;
+			if (dev->core_rev >= 3)
+				entry |= VA_VALID_25_R4 | vid << VA_VID_HIGH_S;
+			else
+				entry |= VA_VALID_25;
+		}
 
 		b53_write32(dev, B53_VLAN_PAGE, B53_VLAN_WRITE_25, entry);
 		b53_write16(dev, B53_VLAN_PAGE, B53_VLAN_TABLE_ACCESS_25, vid |
@@ -198,7 +204,8 @@ static void b53_set_vlan_entry(struct b53_device *dev, u16 vid, u16 members,
 		u16 entry = 0;
 
 		if (members)
-			entry = (untag << VA_UNTAG_S) | members | VA_VALID_65;
+			entry = ((untag & VA_UNTAG_MASK_65) << VA_UNTAG_S_65) |
+				members | VA_VALID_65;
 
 		b53_write16(dev, B53_VLAN_PAGE, B53_VLAN_WRITE_65, entry);
 		b53_write16(dev, B53_VLAN_PAGE, B53_VLAN_TABLE_ACCESS_65, vid |
@@ -367,7 +374,7 @@ static void b53_enable_ports(struct b53_device *dev)
 		 */
 		if (dev->enable_vlan || is_cpu_port(dev, i))
 			pvlan_mask = 0x1ff;
-		else if (is531x5(dev))
+		else if (is531x5(dev) || is5301x(dev))
 			/* BCM53115 may use a different port as cpu port */
 			pvlan_mask = BIT(dev->sw_dev.cpu_port);
 		else
@@ -391,7 +398,7 @@ static void b53_enable_ports(struct b53_device *dev)
 			    pvlan_mask);
 
 		/* port state is handled by bcm63xx_enet driver */
-		if (!is63xx(dev))
+		if (!is63xx(dev) && !(is5301x(dev) && i == 6))
 			b53_write8(dev, B53_CTRL_PAGE, B53_PORT_CTRL(i),
 				   port_ctrl);
 	}
@@ -477,6 +484,11 @@ static int b53_switch_reset(struct b53_device *dev)
 
 	b53_switch_reset_gpio(dev);
 
+	if (is539x(dev)) {
+		b53_write8(dev, B53_CTRL_PAGE, B53_SOFTRESET, 0x83);
+		b53_write8(dev, B53_CTRL_PAGE, B53_SOFTRESET, 0x00);
+	}
+
 	b53_read8(dev, B53_CTRL_PAGE, B53_SWITCH_MODE, &mgmt);
 
 	if (!(mgmt & SM_SW_FWD_EN)) {
@@ -513,7 +525,7 @@ static int b53_switch_reset(struct b53_device *dev)
 				return -EINVAL;
 			}
 		}
-	} else if (is531x5(dev) && dev->sw_dev.cpu_port == B53_CPU_PORT) {
+	} else if ((is531x5(dev) || is5301x(dev)) && dev->sw_dev.cpu_port == B53_CPU_PORT) {
 		u8 mii_port_override;
 
 		b53_read8(dev, B53_CTRL_PAGE, B53_PORT_OVERRIDE_CTRL,
@@ -970,7 +982,7 @@ static const struct switch_dev_ops b53_switch_ops_65 = {
 		.n_attr = ARRAY_SIZE(b53_global_ops_65),
 	},
 	.attr_port = {
-		.attr = b53_no_ops,
+		.attr = b53_port_ops,
 		.n_attr = ARRAY_SIZE(b53_port_ops),
 	},
 	.attr_vlan = {
@@ -1130,6 +1142,71 @@ static const struct b53_chip_data b53_switch_chips[] = {
 		.jumbo_size_reg = B53_JUMBO_MAX_SIZE_63XX,
 		.sw_ops = &b53_switch_ops,
 	},
+	{
+		.chip_id = BCM53010_DEVICE_ID,
+		.dev_name = "BCM53010",
+		.alias = "bcm53011",
+		.vlans = 4096,
+		.enabled_ports = 0x1f,
+		.cpu_port = B53_CPU_PORT_25, // TODO: auto detect
+		.vta_regs = B53_VTA_REGS,
+		.duplex_reg = B53_DUPLEX_STAT_GE,
+		.jumbo_pm_reg = B53_JUMBO_PORT_MASK,
+		.jumbo_size_reg = B53_JUMBO_MAX_SIZE,
+		.sw_ops = &b53_switch_ops,
+	},
+	{
+		.chip_id = BCM53011_DEVICE_ID,
+		.dev_name = "BCM53011",
+		.alias = "bcm53011",
+		.vlans = 4096,
+		.enabled_ports = 0x1f,
+		.cpu_port = B53_CPU_PORT_25, // TODO: auto detect
+		.vta_regs = B53_VTA_REGS,
+		.duplex_reg = B53_DUPLEX_STAT_GE,
+		.jumbo_pm_reg = B53_JUMBO_PORT_MASK,
+		.jumbo_size_reg = B53_JUMBO_MAX_SIZE,
+		.sw_ops = &b53_switch_ops,
+	},
+	{
+		.chip_id = BCM53012_DEVICE_ID,
+		.dev_name = "BCM53012",
+		.alias = "bcm53011",
+		.vlans = 4096,
+		.enabled_ports = 0x1f,
+		.cpu_port = B53_CPU_PORT_25, // TODO: auto detect
+		.vta_regs = B53_VTA_REGS,
+		.duplex_reg = B53_DUPLEX_STAT_GE,
+		.jumbo_pm_reg = B53_JUMBO_PORT_MASK,
+		.jumbo_size_reg = B53_JUMBO_MAX_SIZE,
+		.sw_ops = &b53_switch_ops,
+	},
+	{
+		.chip_id = BCM53018_DEVICE_ID,
+		.dev_name = "BCM53018",
+		.alias = "bcm53018",
+		.vlans = 4096,
+		.enabled_ports = 0x1f,
+		.cpu_port = B53_CPU_PORT_25, // TODO: auto detect
+		.vta_regs = B53_VTA_REGS,
+		.duplex_reg = B53_DUPLEX_STAT_GE,
+		.jumbo_pm_reg = B53_JUMBO_PORT_MASK,
+		.jumbo_size_reg = B53_JUMBO_MAX_SIZE,
+		.sw_ops = &b53_switch_ops,
+	},
+	{
+		.chip_id = BCM53019_DEVICE_ID,
+		.dev_name = "BCM53019",
+		.alias = "bcm53019",
+		.vlans = 4096,
+		.enabled_ports = 0x1f,
+		.cpu_port = B53_CPU_PORT_25, // TODO: auto detect
+		.vta_regs = B53_VTA_REGS,
+		.duplex_reg = B53_DUPLEX_STAT_GE,
+		.jumbo_pm_reg = B53_JUMBO_PORT_MASK,
+		.jumbo_size_reg = B53_JUMBO_MAX_SIZE,
+		.sw_ops = &b53_switch_ops,
+	},
 };
 
 int b53_switch_init(struct b53_device *dev)
@@ -1286,6 +1363,11 @@ int b53_switch_detect(struct b53_device *dev)
 		switch (id32) {
 		case BCM53115_DEVICE_ID:
 		case BCM53125_DEVICE_ID:
+		case BCM53010_DEVICE_ID:
+		case BCM53011_DEVICE_ID:
+		case BCM53012_DEVICE_ID:
+		case BCM53018_DEVICE_ID:
+		case BCM53019_DEVICE_ID:
 			dev->chip_id = id32;
 			break;
 		default:
@@ -1295,7 +1377,12 @@ int b53_switch_detect(struct b53_device *dev)
 		}
 	}
 
-	return b53_read8(dev, B53_MGMT_PAGE, B53_REV_ID, &dev->core_rev);
+	if (dev->chip_id == BCM5325_DEVICE_ID)
+		return b53_read8(dev, B53_STAT_PAGE, B53_REV_ID_25,
+				 &dev->core_rev);
+	else
+		return b53_read8(dev, B53_MGMT_PAGE, B53_REV_ID,
+				 &dev->core_rev);
 }
 EXPORT_SYMBOL(b53_switch_detect);
 

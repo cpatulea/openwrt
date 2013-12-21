@@ -22,7 +22,8 @@ ubnt-unifi-outdoor)
 	ucidef_set_interface_lan "eth0 eth1"
 	;;
 
-ap132)
+ap132 |\
+wlr8100)
 	ucidef_set_interfaces_lan_wan "eth0.1" "eth0.2"
 	ucidef_add_switch "switch0" "1" "1"
 	ucidef_add_switch_vlan "switch0" "1" "0t 2 3 4 5"
@@ -37,7 +38,8 @@ ap136-010)
 	;;
 
 ap136-020 |\
-ap135-020)
+ap135-020 |\
+tl-wr1043nd-v2)
 	ucidef_set_interfaces_lan_wan "eth1" "eth0"
 	ucidef_add_switch "switch0" "1" "1"
 	ucidef_add_switch_vlan "switch0" "1" "0 1 2 3 4"
@@ -168,7 +170,9 @@ tl-wr941nd)
 
 tl-mr3420-v2 |\
 tl-wr841n-v8 |\
+tl-wr842n-v2 |\
 wnr2000-v3 |\
+wnr2200 |\
 wnr612-v2)
 	ucidef_set_interfaces_lan_wan "eth1" "eth0"
 	ucidef_add_switch "switch0" "1" "1"
@@ -193,13 +197,36 @@ wzr-hp-g300nh)
 	ucidef_add_switch_vlan "switch0" "1" "0 1 2 3 5t"
 	;;
 
-dir-825-c1 |\
+dir-825-c1)
+	local mac
+	ucidef_set_interfaces_lan_wan "eth0.1" "eth0.2"
+	ucidef_add_switch "switch0" "1" "1"
+	ucidef_add_switch_vlan "switch0" "1" "0t 1 2 3 4"
+	ucidef_add_switch_vlan "switch0" "2" "0t 5"
+	mac=$(mtd_get_mac_ascii nvram "^wan_mac")
+	[ -n "$mac" ] && ucidef_set_interface_macaddr "wan" "$mac"
+	;;
+
+mynet-n750)
+	local mac
+	ucidef_set_interfaces_lan_wan "eth0.1" "eth0.2"
+	ucidef_add_switch "switch0" "1" "1"
+	ucidef_add_switch_vlan "switch0" "1" "0t 1 2 3 4"
+	ucidef_add_switch_vlan "switch0" "2" "0t 5"
+	mac=$(mtd_get_mac_ascii devdata "wanmac")
+	[ -n "$mac" ] && ucidef_set_interface_macaddr "wan" "$mac"
+	;;
+
 dir-835-a1 |\
 wndr4300)
 	ucidef_set_interfaces_lan_wan "eth0.1" "eth0.2"
 	ucidef_add_switch "switch0" "1" "1"
 	ucidef_add_switch_vlan "switch0" "1" "0t 1 2 3 4"
 	ucidef_add_switch_vlan "switch0" "2" "0t 5"
+	mac_lan=$(mtd_get_mac_binary caldata 0)
+	[ -n "$mac_lan" ] && ucidef_set_interface_macaddr "lan" "$mac_lan"
+	mac_wan=$(mtd_get_mac_binary caldata 6)
+	[ -n "$mac_wan" ] && ucidef_set_interface_macaddr "wan" "$mac_wan"
 	;;
 
 all0305 |\
@@ -212,12 +239,19 @@ mr600v2 |\
 rb-411 |\
 tl-mr10u |\
 tl-mr11u |\
+tl-mr13u |\
 tl-mr3020 |\
 tl-mr3040 |\
+tl-mr3040-v2 |\
+tl-wa750re |\
+tl-wa850re |\
+tl-wa801nd-v2 |\
 tl-wa901nd |\
 tl-wa901nd-v2 |\
+tl-wa901nd-v3 |\
 tl-wr703n |\
 wndap360 |\
+mynet-rext |\
 wp543)
 	ucidef_set_interface_lan "eth0"
 	;;
@@ -247,6 +281,7 @@ dir-600-a1 |\
 dir-615-c1 |\
 dir-615-e4 |\
 ja76pf |\
+mynet-n600 |\
 rb-750 |\
 rb-751 |\
 tew-632brp |\

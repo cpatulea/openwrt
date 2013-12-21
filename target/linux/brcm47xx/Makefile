@@ -10,11 +10,12 @@ ARCH:=mipsel
 BOARD:=brcm47xx
 BOARDNAME:=Broadcom BCM947xx/953xx
 FEATURES:=squashfs usb pcmcia
+MAINTAINER:=Hauke Mehrtens <hauke@hauke-m.de>
 
-LINUX_VERSION:=3.10.9
+LINUX_VERSION:=3.10.24
 
 include $(INCLUDE_DIR)/target.mk
-DEFAULT_PACKAGES += swconfig kmod-switch kmod-diag wpad-mini nvram
+DEFAULT_PACKAGES += swconfig kmod-diag wpad-mini nvram
 
 define Target/Description
 	Build firmware images for Broadcom based routers

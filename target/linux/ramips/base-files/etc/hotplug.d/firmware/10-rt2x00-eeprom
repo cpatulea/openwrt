@@ -21,7 +21,8 @@ rt2x00_eeprom_extract() {
 		rt2x00_eeprom_die "failed to extract from $mtd"
 }
 
-[ -e /lib/firmware/$FIRMWARE ] && exit 0
+FW="/lib/firmware/$FIRMWARE"
+[ -e "$FW" ] && exit 0
 
 . /lib/ramips.sh
 
@@ -34,6 +35,7 @@ case "$FIRMWARE" in
 	dir-300-b1 | \
 	dir-600-b1 | \
 	dir-600-b2 | \
+	dir-610-a1 | \
 	dir-615-d)
 		rt2x00_eeprom_extract "devdata" 16384 512
 		;;
@@ -68,7 +70,9 @@ case "$FIRMWARE" in
 	br6524n | \
 	carambola | \
 	d105 | \
-	dir-610-a1 | \
+	dcs-930 | \
+	dir-300-b7 | \
+	dir-320-b1 | \
 	dir-615-h1 | \
 	dir-620-a1 | \
 	dir-620-d1 | \

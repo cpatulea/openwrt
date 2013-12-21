@@ -31,6 +31,7 @@
 
 #define HEADER_VERSION_V1	0x01000000
 #define HWID_TL_MR10U_V1	0x00100101
+#define HWID_TL_MR13U_V1	0x00130101
 #define HWID_TL_MR3020_V1	0x30200001
 #define HWID_TL_MR3220_V1	0x32200001
 #define HWID_TL_MR3220_V2	0x32200002
@@ -41,6 +42,7 @@
 #define HWID_TL_WA801ND_V1	0x08010001
 #define HWID_TL_WA830RE_V1	0x08300010
 #define HWID_TL_WA830RE_V2	0x08300002
+#define HWID_TL_WA801ND_V2	0x08010002
 #define HWID_TL_WA901ND_V1	0x09010001
 #define HWID_TL_WA901ND_V2	0x09010002
 #define HWID_TL_WDR4900_V1	0x49000001
@@ -59,6 +61,7 @@
 #define HWID_TL_WR941ND_V2	0x09410002
 #define HWID_TL_WR941ND_V4	0x09410004
 #define HWID_TL_WR1043ND_V1	0x10430001
+#define HWID_TL_WR1043ND_V2	0x10430002
 #define HWID_TL_WR1041N_V2	0x10410002
 #define HWID_TL_WR2543N_V1	0x25430001
 
@@ -199,6 +202,11 @@ static struct board_info boards[] = {
 		.hw_rev		= 1,
 		.layout_id	= "4Mlzma",
 	}, {
+		.id		= "TL-MR13Uv1",
+		.hw_id		= HWID_TL_MR13U_V1,
+		.hw_rev		= 1,
+		.layout_id	= "4Mlzma",
+	}, {
 		.id		= "TL-MR3020v1",
 		.hw_id		= HWID_TL_MR3020_V1,
 		.hw_rev		= 1,
@@ -248,6 +256,11 @@ static struct board_info boards[] = {
 		.hw_id		= HWID_TL_WA830RE_V2,
 		.hw_rev		= 1,
 		.layout_id	= "4M",
+	}, {
+		.id             = "TL-WA801NDv2",
+		.hw_id          = HWID_TL_WA801ND_V2,
+		.hw_rev         = 1,
+		.layout_id	= "4Mlzma",
 	}, {
 		.id		= "TL-WA901NDv1",
 		.hw_id		= HWID_TL_WA901ND_V1,
@@ -333,6 +346,11 @@ static struct board_info boards[] = {
 		.hw_id		= HWID_TL_WR1043ND_V1,
 		.hw_rev		= 1,
 		.layout_id	= "8M",
+	}, {
+		.id		= "TL-WR1043NDv2",
+		.hw_id		= HWID_TL_WR1043ND_V2,
+		.hw_rev		= 1,
+		.layout_id	= "8Mlzma",
 	}, {
 		.id		= "TL-WR2543Nv1",
 		.hw_id		= HWID_TL_WR2543N_V1,

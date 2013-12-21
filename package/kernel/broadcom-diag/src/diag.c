@@ -83,12 +83,15 @@ enum {
 	WRT160NV1,
 	WRT160NV3,
 	WRT300NV11,
+	WRT310NV1,
 	WRT350N,
 	WRT600N,
 	WRT600NV11,
 	WRT610N,
 	WRT610NV2,
 	E1000V1,
+	E1000V21,
+	E2000V1,
 	E3000V1,
 	E3200V1,
 	E4200V1,
@@ -142,6 +145,7 @@ enum {
 
 	/* Belkin */
 	BELKIN_UNKNOWN,
+	BELKIN_F7D330X, /* covers F7D7302,F7D3302,F7D3301, and F7D7301 */
 	BELKIN_F7D4301,
 
 	/* Netgear */
@@ -180,6 +184,9 @@ enum {
 
 	/* Edimax */
 	PS1208MFG,
+
+	/* Huawei */
+	HUAWEI_E970,
 };
 
 static void __init bcm4780_init(void) {
@@ -378,6 +385,18 @@ static struct platform_t __initdata platforms[] = {
 		},
 		.platform_init = bcm57xx_init,
 	},
+	[WRT310NV1] = {
+		.name		= "Linksys WRT310N V1",
+		.buttons	= {
+			{ .name = "reset",	.gpio = 1 << 6 }, // "Reset" on back panel
+			{ .name = "ses",	.gpio = 1 << 8 }, // "Reserved" on top panel
+		},
+		.leds		= {
+			{ .name = "power",	.gpio = 1 << 1, .polarity = NORMAL }, // Power LED
+			{ .name = "ses_amber",	.gpio = 1 << 3, .polarity = REVERSE }, // "Security" Amber
+			{ .name = "ses_blue",	.gpio = 1 << 9, .polarity = REVERSE }, // "Security" Blue
+		},
+	},
 	[WRT350N] = {
 		.name		= "Linksys WRT350N",
 		.buttons	= {
@@ -469,6 +488,32 @@ static struct platform_t __initdata platforms[] = {
 			{ .name = "power",      .gpio = 1 << 1, .polarity = NORMAL },
 			{ .name = "ses_blue",   .gpio = 1 << 4, .polarity = REVERSE }, /* nvram get gpio4=wps_led */
 			{ .name = "ses_orange", .gpio = 1 << 2, .polarity = REVERSE }, /* nvram get gpio2=wps_status_led */
+		},
+	},
+	[E1000V21] = {
+		.name		= "Linksys E1000 V2.1",
+		.buttons	= {
+			{ .name = "reset",	.gpio = 1 << 10 }, /* nvram get reset_gpio=10 */
+			{ .name = "wps",	.gpio = 1 << 9 }, /* nvram get gpio9=wps_button */
+		},
+		.leds		= {
+			{ .name = "power",      .gpio = 1 << 6, .polarity = REVERSE },
+			{ .name = "wlan",       .gpio = 1 << 5, .polarity = NORMAL },
+			{ .name = "ses_blue",	.gpio = 1 << 8, .polarity = NORMAL }, /* nvram get gpio8=wps_led */
+			{ .name = "ses_orange",	.gpio = 1 << 7, .polarity = NORMAL }, /* nvram get gpio7=wps_status_led */
+		},
+	},
+	[E2000V1] = {
+		.name		= "Linksys E2000 V1",
+		.buttons	= {
+			{ .name = "reset",	.gpio = 1 << 8 },
+			{ .name = "ses",	.gpio = 1 << 5 },
+		},
+		.leds		= {
+			{ .name = "power",	.gpio = 1 << 2, .polarity = NORMAL },
+			{ .name = "ses_amber",	.gpio = 1 << 4, .polarity = REVERSE },
+			{ .name = "ses_blue",	.gpio = 1 << 3, .polarity = REVERSE },
+			{ .name = "wlan",	.gpio = 1 << 1, .polarity = NORMAL },
 		},
 	},
 	[E3000V1] = {
@@ -667,7 +712,7 @@ static struct platform_t __initdata platforms[] = {
 		.name		= "ASUS RT-N16",
 		.buttons	= {
 			{ .name = "reset",	.gpio = 1 << 8 },
-			{ .name = "ses",	.gpio = 1 << 5 },
+			{ .name = "ses",	.gpio = 1 << 6 },
 		},
 		.leds		= {
 			{ .name = "power",	.gpio = 1 << 1, .polarity = REVERSE },
@@ -922,6 +967,26 @@ static struct platform_t __initdata platforms[] = {
 			{ .name = "connected",	.gpio = 1 << 0, .polarity = NORMAL },
 		},
 	},
+	[BELKIN_F7D330X] = {
+		.name		= "Belkin F7D330X",
+		.buttons	= {
+			{ .name = "reset",	.gpio = 1 << 6 },
+			{ .name = "wps",	.gpio = 1 << 8 },
+		},
+		.leds		= {
+			/* green */
+			{ .name = "power",	.gpio = 1 << 10, .polarity = REVERSE },
+			/* orange power */
+			{ .name = "warn",	.gpio = 1 << 11, .polarity = REVERSE },
+			/* green */
+			{ .name = "wps",	.gpio = 1 << 12, .polarity = REVERSE },
+			/* orange wps */
+			{ .name = "wlan",	.gpio = 1 << 13, .polarity = REVERSE },
+			{ .name = "usb0",	.gpio = 1 << 14, .polarity = REVERSE },
+			/* shipped unconnected in the F7D3302 */
+			{ .name = "usb1",	.gpio = 1 << 15, .polarity = REVERSE },
+		},
+	},
 	[BELKIN_F7D4301] = {
 		.name		= "Belkin PlayMax F7D4301",
 		.buttons	= {
@@ -929,10 +994,12 @@ static struct platform_t __initdata platforms[] = {
 			{ .name = "wps",	.gpio = 1 << 8 },
 		},
 		.leds		= {
-			{ .name = "power",	.gpio = 1 << 11, .polarity = REVERSE },
+			{ .name = "power",	.gpio = 1 << 10, .polarity = REVERSE },
+			{ .name = "warn",	.gpio = 1 << 11, .polarity = REVERSE },
+			{ .name = "wps",	.gpio = 1 << 12, .polarity = REVERSE },
 			{ .name = "wlan",	.gpio = 1 << 13, .polarity = REVERSE },
-			{ .name = "led0",	.gpio = 1 << 14, .polarity = REVERSE },
-			{ .name = "led1",	.gpio = 1 << 15, .polarity = REVERSE },
+			{ .name = "usb0",	.gpio = 1 << 14, .polarity = REVERSE },
+			{ .name = "usb1",	.gpio = 1 << 15, .polarity = REVERSE },
 		},
 	},
 	/* Netgear */
@@ -1145,6 +1212,16 @@ static struct platform_t __initdata platforms[] = {
 			{ .name = "wlan",	.gpio = 1 << 0, .polarity = NORMAL },
 		},
 	},
+	/* Huawei */
+	[HUAWEI_E970] = {
+		.name	 	= "Huawei E970",
+		.buttons 	= {
+			{ .name = "reset",	.gpio = 1 << 6 },
+		},
+		.leds		= {
+			{ .name = "wlan",	.gpio = 1 << 0, .polarity = NORMAL },
+		},
+	},
 };
 
 static struct platform_t __init *platform_detect_legacy(void)
@@ -1176,8 +1253,9 @@ static struct platform_t __init *platform_detect_legacy(void)
 			if (!strcmp(boardtype, "0x0101") && !strcmp(getvar("boot_ver"), "v3.6"))
 				return &platforms[WRT54G3G];
 
-			/* default to WRT54G */
-			return &platforms[WRT54G];
+			/* default to WRT54G if no boot_hw_model is set */
+			if (nvram_get("boot_hw_model") == NULL)
+				return &platforms[WRT54G];
 		}
 		if (!strcmp(boardnum, "1024") && !strcmp(boardtype, "0x0446"))
 			return &platforms[WAP54GV2];
@@ -1289,7 +1367,7 @@ static struct platform_t __init *platform_detect(void)
 
 	board = bcm47xx_board_get();
 	board_name = bcm47xx_board_get_name();
-	if (board != BCM47XX_BOARD_UNKNOWN && board != BCM47XX_BOARD_NON)
+	if (board != BCM47XX_BOARD_UNKNOWN && board != BCM47XX_BOARD_NO)
 		printk(MODULE_NAME ": kernel found a \"%s\"\n", board_name);
 
 	switch(board) {
@@ -1323,6 +1401,8 @@ static struct platform_t __init *platform_detect(void)
 		return &platforms[WLHDD];
 	case BCM47XX_BOARD_BELKIN_F7D4301:
 		return &platforms[BELKIN_F7D4301];
+	case BCM47XX_BOARD_BELKIN_F7D330X:
+		return &platforms[BELKIN_F7D330X];
 	case BCM47XX_BOARD_BUFFALO_WBR2_G54:
 		return &platforms[WBR2_G54];
 	case BCM47XX_BOARD_BUFFALO_WHR2_A54G54:
@@ -1347,8 +1427,14 @@ static struct platform_t __init *platform_detect(void)
 		return &platforms[DIR130];
 	case BCM47XX_BOARD_DLINK_DIR330:
 		return &platforms[DIR330];
+	case BCM47XX_BOARD_HUAWEI_E970:
+		return &platforms[HUAWEI_E970];
 	case BCM47XX_BOARD_LINKSYS_E1000V1:
 		return &platforms[E1000V1];
+	case BCM47XX_BOARD_LINKSYS_E1000V21:
+		return &platforms[E1000V21];
+	case BCM47XX_BOARD_LINKSYS_E2000V1:
+		return &platforms[E2000V1];
 	case BCM47XX_BOARD_LINKSYS_E3000V1:
 		return &platforms[E3000V1];
 	case BCM47XX_BOARD_LINKSYS_E3200V1:
@@ -1365,6 +1451,10 @@ static struct platform_t __init *platform_detect(void)
 		return &platforms[WRT160NV3];
 	case BCM47XX_BOARD_LINKSYS_WRT300NV11:
 		return &platforms[WRT300NV11];
+	case BCM47XX_BOARD_LINKSYS_WRT310NV1:
+		return &platforms[WRT310NV1];
+	case BCM47XX_BOARD_LINKSYS_WRT54GSV1:
+		return &platforms[WRT54G];
 	case BCM47XX_BOARD_LINKSYS_WRT54G3GV2:
 		return &platforms[WRT54G3GV2_VF];
 	case BCM47XX_BOARD_LINKSYS_WRT610NV1:
@@ -1384,7 +1474,7 @@ static struct platform_t __init *platform_detect(void)
 	case BCM47XX_BOARD_NETGEAR_WNDR3700V3:
 		return &platforms[WNDR3700V3];
 	case BCM47XX_BOARD_UNKNOWN:
-	case BCM47XX_BOARD_NON:
+	case BCM47XX_BOARD_NO:
 		printk(MODULE_NAME ": unknown board found, try legacy detect\n");
 		printk(MODULE_NAME ": please open a ticket at https://dev.openwrt.org and attach the complete nvram\n");
 		return platform_detect_legacy();

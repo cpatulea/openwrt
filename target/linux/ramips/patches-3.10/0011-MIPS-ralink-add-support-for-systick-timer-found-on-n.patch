@@ -22,7 +22,7 @@ Signed-off-by: John Crispin <blogic@openwrt.org>
  if RALINK
  
 +config CLKEVT_RT3352
-+	bool
++	bool "Systick Clockevent source"
 +	depends on SOC_RT305X || SOC_MT7620
 +	default y
 +	select CLKSRC_OF
