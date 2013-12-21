@@ -166,6 +166,10 @@ config KERNEL_KGDB_TESTS
 	bool "Enable KGDB_TESTS"
 	default n
 
+config KERNEL_KDB_CONTINUE_CATASTROPHIC
+	int "Enable KDB_CONTINUE_CATASTROPHIC"
+	default "0"
+
 config KERNEL_CMDLINE
 	string "Command line"
 
