@@ -109,6 +109,9 @@ ramips_board_detect() {
 	*"ESR-9753")
 		name="esr-9753"
 		;;
+	*"Edimax BR-6475nD")
+		name="br-6475nd"
+		;;
 	*"F7C027")
 		name="f7c027"
 		;;
@@ -127,11 +130,17 @@ ramips_board_detect() {
 	*"La Fonera 2.0N")
 		name="fonera20n"
 		;;
+	*"Asus RT-N14U")
+		name="rt-n14u"
+		;;
 	*"Asus RT-N13U")
 		name="rt-n13u"
 		;;
 	*"MoFi Network MOFI3500-3GN")
 		name="mofi3500-3gn"
+		;;
+	*"HILINK HLK-RM04")
+		name="hlk-rm04"
 		;;
 	*"HAME MPR-A1")
  		name="mpr-a1"
