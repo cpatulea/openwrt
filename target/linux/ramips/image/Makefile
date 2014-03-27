@@ -666,6 +666,8 @@ Image/Build/Profile/WHR300HP2=$(call BuildFirmware/CustomFlash/$(1),$(1),whr-300
 Image/Build/Profile/WHR600D=$(call BuildFirmware/CustomFlash/$(1),$(1),whr-600d,WHR-600D,$(whr_300hp2_mtd_size))
 dlink810l_mtd_size=6881280
 Image/Build/Profile/DIR-810L=$(call BuildFirmware/CustomFlash/$(1),$(1),dir-810l,DIR-810L,$(dlink810l_mtd_size))
+na930_mtd_size=20971520
+Image/Build/Profile/NA930=$(call BuildFirmware/CustomFlash/$(1),$(1),na930,NA930,$(na930_mtd_size))
 
 ifeq ($(SUBTARGET),mt7620a)
 define Image/Build/Profile/Default
@@ -677,6 +679,7 @@ define Image/Build/Profile/Default
 	$(call Image/Build/Profile/DIR-810L,$(1))
 	$(call Image/Build/Profile/WHR300HP2,$(1))
 	$(call Image/Build/Profile/WHR600D,$(1))
+	$(call Image/Build/Profile/NA930,$(1))
 endef
 endif
 
@@ -687,11 +690,13 @@ endif
 
 Image/Build/Profile/WMR300=$(call BuildFirmware/Default8M/$(1),$(1),wmr-300,WMR300)
 Image/Build/Profile/RT-N14U=$(call BuildFirmware/Default8M/$(1),$(1),rt-n14u,RT-N14U)
+Image/Build/Profile/WRTNODE=$(call BuildFirmware/Default16M/$(1),$(1),wrtnode,WRTNODE)
 
 ifeq ($(SUBTARGET),mt7620n)
 define Image/Build/Profile/Default
 	$(call Image/Build/Profile/WMR300,$(1))
 	$(call Image/Build/Profile/RT-N14U,$(1))
+	$(call Image/Build/Profile/WRTNODE,$(1))
 endef
 endif
 
