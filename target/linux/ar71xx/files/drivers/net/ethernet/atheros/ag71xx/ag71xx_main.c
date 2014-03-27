@@ -134,8 +134,8 @@ static int ag71xx_ring_alloc(struct ag71xx_ring *ring)
 	return 0;
 
 err_dma_free:
-  dma_free_coherent(NULL, ring->size * ring->desc_size, ring->descs_cpu,
-                    ring->descs_dma);
+	dma_free_coherent(NULL, ring->size * ring->desc_size, ring->descs_cpu,
+			  ring->descs_dma);
 err:
 	return err;
 }

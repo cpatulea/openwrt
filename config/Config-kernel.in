@@ -134,14 +134,6 @@ config USE_RFKILL
 config KERNEL_NETCONSOLE
 	bool "Enable netconsole"
 
-config KERNEL_NETPOLL
-	bool "Enable netpoll (for netconsole)"
-	default y
-
-config KERNEL_NETPOLL_TRAP
-	bool "Enable netpoll trap (for netconsole)"
-	default y
-
 config KERNEL_KGDB
 	bool "Enable KGDB"
 	default y
