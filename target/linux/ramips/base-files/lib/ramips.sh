@@ -280,6 +280,12 @@ ramips_board_detect() {
 	*"V22SG")
 		name="v22sg"
 		;;
+	*"WRTNODE")
+		name="wrtnode"
+		;;
+	*"Sercomm NA930")
+		name="na930"
+		;;
 	*)
 		name="generic"
 		;;

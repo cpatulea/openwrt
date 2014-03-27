@@ -65,8 +65,7 @@ setup_interface () {
 		local metric="${entry%%,*}"
 
 		if [ -z "$SOURCE_ROUTING" -o -z "$gw" ]; then
-			proto_add_ipv6_route "$addr" "$mask" "$gw" "$metric" "$valid" "::/128"
-			proto_add_ipv6_route "$addr" "$mask" "$gw" "$metric" "$valid" "$addr/$mask"
+			proto_add_ipv6_route "$addr" "$mask" "$gw" "$metric" "$valid"
 		else
 			proto_add_ipv6_route "$addr" "$mask" "$gw" "$metric" "$valid" "::/128"
 			for prefix in $PREFIXES $ADDRESSES; do
@@ -85,6 +84,8 @@ setup_interface () {
 		json_add_string proto "dslite"
 		json_add_string peeraddr "$AFTR_IP"
 		json_add_string tunlink "$INTERFACE"
+		[ -n "$ZONE_DSLITE" ] && json_add_string zone "$ZONE_DSLITE"
+		[ -n "$IFACE_DSLITE_DELEGATE" ] && json_add_boolean delegate "$IFACE_DSLITE_DELEGATE"
 		json_close_object
 		ubus call network add_dynamic "$(json_dump)"
 	fi
