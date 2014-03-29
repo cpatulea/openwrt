@@ -162,6 +162,14 @@ config KERNEL_KDB_CONTINUE_CATASTROPHIC
 	int "Enable KDB_CONTINUE_CATASTROPHIC"
 	default "0"
 
+config KERNEL_NETPOLL
+	bool "Enable netpoll (for netconsole)"
+	default y
+
+config KERNEL_NETPOLL_TRAP
+	bool "Enable netpoll trap (for netconsole)"
+	default y
+
 config KERNEL_CMDLINE
 	string "Command line"
 
