@@ -5,6 +5,20 @@
 # See /LICENSE for more information.
 #
 
+define KernelPackage/ag7100
+  SUBMENU:=$(NETWORK_DEVICES_MENU)
+  TITLE:=Atheros AG7100
+  DEPENDS:=@TARGET_ar71xx +kmod-mii
+  KCONFIG:=CONFIG_AG71XX CONFIG_AR8216_PHY
+  FILES:= \
+    $(LINUX_DIR)/drivers/net/ethernet/atheros/ag71xx/ag71xx.ko \
+    $(LINUX_DIR)/drivers/net/phy/ar8216.ko
+  AUTOLOAD:=
+endef
+
+$(eval $(call KernelPackage,ag7100))
+
+
 define KernelPackage/leds-rb750
   SUBMENU:=$(LEDS_MENU)
   TITLE:=RouterBOARD 750 LED support
