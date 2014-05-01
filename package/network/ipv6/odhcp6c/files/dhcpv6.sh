@@ -5,6 +5,8 @@
 init_proto "$@"
 
 proto_dhcpv6_init_config() {
+	renew_handler=1
+
 	proto_config_add_string 'reqaddress:or("try","force","none")'
 	proto_config_add_string 'reqprefix:or("auto","no",range(0, 64))'
 	proto_config_add_string clientid
@@ -15,6 +17,8 @@ proto_dhcpv6_init_config() {
 	proto_config_add_string 'ip6prefix:ip6addr'
 	proto_config_add_string iface_dslite
 	proto_config_add_string zone_dslite
+	proto_config_add_string iface_map
+	proto_config_add_string zone_map
 	proto_config_add_string 'ifaceid:ip6addr'
 	proto_config_add_string 'sourcerouting:bool'
 	proto_config_add_string "userclass"
@@ -26,8 +30,8 @@ proto_dhcpv6_setup() {
 	local config="$1"
 	local iface="$2"
 
-	local reqaddress reqprefix clientid reqopts noslaaconly forceprefix norelease ip6prefix iface_dslite ifaceid sourcerouting userclass vendorclass delegate zone_dslite
-	json_get_vars reqaddress reqprefix clientid reqopts noslaaconly forceprefix norelease ip6prefix iface_dslite ifaceid sourcerouting userclass vendorclass delegate zone_dslite
+	local reqaddress reqprefix clientid reqopts noslaaconly forceprefix norelease ip6prefix iface_dslite iface_map ifaceid sourcerouting userclass vendorclass delegate zone_dslite zone_map
+	json_get_vars reqaddress reqprefix clientid reqopts noslaaconly forceprefix norelease ip6prefix iface_dslite iface_map ifaceid sourcerouting userclass vendorclass delegate zone_dslite zone_map
 
 
 	# Configure
@@ -57,14 +61,24 @@ proto_dhcpv6_setup() {
 
 	[ -n "$ip6prefix" ] && proto_export "USERPREFIX=$ip6prefix"
 	[ -n "$iface_dslite" ] && proto_export "IFACE_DSLITE=$iface_dslite"
+	[ -n "$iface_map" ] && proto_export "IFACE_MAP=$iface_map"
 	[ "$sourcerouting" != "0" ] && proto_export "SOURCE_ROUTING=1"
 	[ "$delegate" = "0" ] && proto_export "IFACE_DSLITE_DELEGATE=0"
+	[ "$delegate" = "0" ] && proto_export "IFACE_MAP_DELEGATE=0"
 	[ -n "$zone_dslite" ] && proto_export "ZONE_DSLITE=$zone_dslite"
+	[ -n "$zone_map" ] && proto_export "ZONE_MAP=$zone_map"
 
 	proto_export "INTERFACE=$config"
 	proto_run_command "$config" odhcp6c \
 		-s /lib/netifd/dhcpv6.script \
 		$opts $iface
+}
+
+proto_dhcpv6_renew() {
+	local interface="$1"
+	# SIGUSR1 forces odhcp6c to renew its lease
+	local sigusr1="$(kill -l SIGUSR1)"
+	[ -n "$sigusr1" ] && proto_kill_command "$interface" $sigusr1
 }
 
 proto_dhcpv6_teardown() {

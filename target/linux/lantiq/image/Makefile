@@ -339,12 +339,6 @@ Image/Build/Profile/H201L=$(call Image/Build/$(1),$(1),H201L)
 Image/BuildKernel/Profile/P2601HNFX=$(call Image/BuildKernel/Template,P2601HNFX)
 Image/Build/Profile/P2601HNFX=$(call Image/Build/$(1),$(1),P2601HNFX)
 
-Image/BuildKernel/Profile/ARV7519RWV11=$(call Image/BuildKernel/Template,ARV7519RWV11,$(1))
-Image/Build/Profile/ARV7519RWV11=$(call Image/Build/$(1), $(1),ARV7519RWV11)
-
-Image/BuildKernel/Profile/ARV7519RWV12=$(call Image/BuildKernel/Template,ARV7519RWV12,$(1))
-Image/Build/Profile/ARV7519RWV12=$(call Image/Build/$(1), $(1),ARV7519RWV12)
-
 endif
 
 
@@ -354,6 +348,12 @@ ifeq ($(CONFIG_TARGET_lantiq_xrx200),y)
 Image/BuildKernel/Profile/P2812HNUFX=$(call Image/BuildKernel/Template,P2812HNUFX)
 Image/InstallKernel/Template/P2812HNUFX=$(call Image/InstallKernel/Template,P2812HNUFX)
 Image/Build/Profile/P2812HNUFX=$(call Image/Build/$(1),$(1),P2812HNUFX)
+
+Image/BuildKernel/Profile/ARV7519RWV11=$(call Image/BuildKernel/Template,ARV7519RWV11,$(1))
+Image/Build/Profile/ARV7519RWV11=$(call Image/Build/$(1),$(1),ARV7519RWV11)
+
+Image/BuildKernel/Profile/ARV7519RWV12=$(call Image/BuildKernel/Template,ARV7519RWV12,$(1))
+Image/Build/Profile/ARV7519RWV12=$(call Image/Build/$(1),$(1),ARV7519RWV12)
 
 Image/BuildKernel/Profile/EASY80920NAND=$(call Image/BuildKernel/Template,EASY80920NAND)
 Image/Build/Profile/EASY80920NAND=$(call Image/Build/$(1),$(1),EASY80920NAND)
@@ -366,6 +366,9 @@ Image/Build/Profile/FRITZ3370=$(call Image/BuildEVA/$(1),$(1),FRITZ3370)
 
 Image/BuildKernel/Profile/VG3503J=$(call Image/BuildKernelLoader/Template,VG3503J)
 Image/Build/Profile/VG3503J=$(call Image/BuildLoader/$(1),$(1),VG3503J)
+
+Image/BuildKernel/Profile/VG3503J_V2=$(call Image/BuildKernelLoader/Template,VG3503J_V2)
+Image/Build/Profile/VG3503J_V2=$(call Image/BuildLoader/$(1),$(1),VG3503J_V2)
 
 Image/BuildKernel/Profile/TDW8970=$(call Image/BuildKernelTPLink/Template,TDW8970,TD-W8970v1,$(1))
 Image/Build/Profile/TDW8970=$(call Image/BuildTPLink/$(1),$(1),TDW8970,TD-W8970v1)
