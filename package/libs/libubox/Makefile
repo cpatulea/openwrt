@@ -1,15 +1,15 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=libubox
-PKG_VERSION:=2013-03-05
+PKG_VERSION:=2014-08-04
 PKG_RELEASE=$(PKG_SOURCE_VERSION)
 
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_URL:=git://nbd.name/luci2/libubox.git
+PKG_SOURCE_URL:=http://git.openwrt.org/project/libubox.git
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
-PKG_SOURCE_VERSION:=49e6e062b8effe281a85de167c16c5f039b74442
+PKG_SOURCE_VERSION:=dffbc09baf71b294185a36048166d00066d433b5
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
-PKG_MIRROR_MD5SUM:=b32d297d846b271585925f190fad2c60
+PKG_MIRROR_MD5SUM:=
 CMAKE_INSTALL:=1
 
 PKG_LICENSE:=ISC BSD-3c
@@ -26,6 +26,7 @@ define Package/libubox
   SECTION:=libs
   CATEGORY:=Libraries
   TITLE:=Basic utility library
+  ABI_VERSION:=$(PKG_VERSION)
   DEPENDS:=
 endef
 
@@ -33,13 +34,13 @@ define Package/libblobmsg-json
   SECTION:=libs
   CATEGORY:=Libraries
   TITLE:=blobmsg <-> json conversion library
-  DEPENDS:=+libjson +libubox
+  DEPENDS:=+libjson-c +libubox
 endef
 
 define Package/jshn
   SECTION:=utils
   CATEGORY:=Utilities
-  DEPENDS:=+libjson
+  DEPENDS:=+libjson-c +libubox +libblobmsg-json
   TITLE:=JSON SHell Notation
 endef
 
@@ -52,6 +53,13 @@ define Package/libjson-script
   CATEGORY:=Utilities
   DEPENDS:=+libubox
   TITLE:=Minimalistic JSON based scripting engine
+endef
+
+define Package/libubox-lua
+  SECTION:=libs
+  CATEGORY:=Libraries
+  DEPENDS:=+libubox +liblua
+  TITLE:=Lua binding for the OpenWrt Basic utility library
 endef
 
 TARGET_CFLAGS += -I$(STAGING_DIR)/usr/include
@@ -79,7 +87,13 @@ define Package/libjson-script/install
 	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/lib/libjson_script.so $(1)/lib/
 endef
 
+define Package/libubox-lua/install
+	$(INSTALL_DIR) $(1)/usr/lib/lua
+	$(CP) $(PKG_BUILD_DIR)/lua/uloop.so $(1)/usr/lib/lua/
+endef
+
 $(eval $(call BuildPackage,libubox))
 $(eval $(call BuildPackage,libblobmsg-json))
 $(eval $(call BuildPackage,jshn))
 $(eval $(call BuildPackage,libjson-script))
+$(eval $(call BuildPackage,libubox-lua))
