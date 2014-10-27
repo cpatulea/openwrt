@@ -160,11 +160,45 @@ config USE_RFKILL
 
 config USE_SPARSE
 	bool "Enable sparse check during kernel build"
+
+config KERNEL_NETCONSOLE
+	bool "Enable netconsole"
+
+config KERNEL_KGDB
+	bool "Enable KGDB"
+	default y
+
+config KERNEL_KGDB_SERIAL_CONSOLE
+	bool "Enable KGDB_SERIAL_CONSOLE"
+	default y
+
+config KERNEL_SERIAL_KGDB_NMI
+	bool "Enable SERIAL_KGDB_NMI"
+	default n
+
+config KERNEL_KGDB_KDB
+	bool "Enable KGDB_KDB"
+	default n
+
+config KERNEL_KGDB_LOW_LEVEL_TRAP
+	bool "Enable KGDB_LOW_LEVEL_TRAP"
+	default n
+
+config KERNEL_KGDB_TESTS
+	bool "Enable KGDB_TESTS"
 	default n
 
 config KERNEL_KDB_CONTINUE_CATASTROPHIC
 	int "Enable KDB_CONTINUE_CATASTROPHIC"
 	default "0"
+
+config KERNEL_NETPOLL
+	bool "Enable netpoll (for netconsole)"
+	default y
+
+config KERNEL_NETPOLL_TRAP
+	bool "Enable netpoll trap (for netconsole)"
+	default y
 
 config KERNEL_CMDLINE
 	string "Command line"

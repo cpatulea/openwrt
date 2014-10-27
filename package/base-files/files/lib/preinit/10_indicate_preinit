@@ -33,7 +33,7 @@ preinit_net_echo() {
 
 preinit_echo() {
 	preinit_net_echo "$1"
-	echo $1
+	echo "$1"
 }
 
 pi_indicate_led() {
