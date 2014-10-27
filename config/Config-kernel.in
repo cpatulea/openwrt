@@ -10,7 +10,7 @@ config KERNEL_PRINTK
 
 config KERNEL_CRASHLOG
 	bool "Crash logging"
-	depends on !(arm || powerpc || sparc)
+	depends on !(arm || powerpc || sparc || TARGET_uml)
 	default y
 
 config KERNEL_SWAP
@@ -18,12 +18,13 @@ config KERNEL_SWAP
 	default y
 
 config KERNEL_DEBUG_FS
-	bool "Compile the kernel with Debug FileSystem enabled"
+	bool "Compile the kernel with debug filesystem enabled"
 	default y
 	help
 	  debugfs is a virtual file system that kernel developers use to put
 	  debugging files into. Enable this option to be able to read and
-	  write to these files.
+	  write to these files. Many common debugging facilities, such as
+	  ftrace, require the existence of debugfs.
 
 config KERNEL_PERF_EVENTS
 	bool
@@ -41,7 +42,7 @@ config KERNEL_KALLSYMS
 	bool "Compile the kernel with symbol table information"
 	default y
 	help
-	  This will give you more information in stack traces from kernel oopses
+	  This will give you more information in stack traces from kernel oopses.
 
 config KERNEL_FTRACE
 	bool "Compile the kernel with tracing support"
@@ -79,7 +80,7 @@ config KERNEL_DEBUG_LL
 	depends on arm
 	select KERNEL_DEBUG_LL_UART_NONE
 	help
-	  ARM low level debugging
+	  ARM low level debugging.
 
 config KERNEL_DYNAMIC_DEBUG 
 	bool "Compile the kernel with dynamic printk"
@@ -100,9 +101,8 @@ config KERNEL_EARLY_PRINTK
 	select KERNEL_DEBUG_KERNEL
 	select KERNEL_DEBUG_LL if arm
 	help
-	  Compile the kernel with early printk support.
-	  This is only useful for debugging purposes to send messages
-	  over the serial console in early boot.
+	  Compile the kernel with early printk support.  This is only useful for
+	  debugging purposes to send messages over the serial console in early boot.
 	  Enable this to debug early boot problems.
 
 config KERNEL_AIO
@@ -133,6 +133,20 @@ config KERNEL_PROVE_LOCKING
 config KERNEL_PRINTK_TIME
 	bool "Enable printk timestamps"
 	default y
+
+config KERNEL_SLUB_DEBUG
+	bool
+
+config KERNEL_SLUB_DEBUG_ON
+	bool
+
+config KERNEL_SLABINFO
+	select KERNEL_SLUB_DEBUG
+	select KERNEL_SLUB_DEBUG_ON
+	bool "Enable /proc slab debug info"
+
+config KERNEL_PROC_PAGE_MONITOR
+	bool "Enable /proc page monitoring"
 
 config KERNEL_RELAY
 	bool
@@ -214,7 +228,7 @@ if KERNEL_CGROUPS
 
 	config KERNEL_CGROUP_FREEZER
 		bool "Freezer cgroup subsystem"
-		default n
+		default y
 		help
 		  Provides a way to freeze and unfreeze all tasks in a
 		  cgroup.
@@ -272,11 +286,11 @@ if KERNEL_CGROUPS
 		  usage tracking struct at boot. Total amount of this is printed out
 		  at boot.
 
-		  Only enable when you're ok with these trade offs and really
+		  Only enable when you're ok with these tradeoffs and really
 		  sure you need the memory resource controller. Even when you enable
 		  this, you can set "cgroup_disable=memory" at your boot option to
-		  disable memory resource controller and you can avoid overheads.
-		  (and lose benefits of memory resource controller)
+		  disable memory resource controller and you can avoid overheads
+		  (but lose benefits of memory resource controller).
 
 		  This config option also selects MM_OWNER config option, which
 		  could in turn add some fork/exit overhead.
@@ -310,8 +324,9 @@ if KERNEL_CGROUPS
 		  which want to enable the feature but keep it disabled by default
 		  and let the user enable it by swapaccount boot command line
 		  parameter should have this option unselected.
-		  For those who want to have the feature enabled by default should
-		  select this option (if, for some reason, they need to disable it
+
+		  Those who want to have the feature enabled by default should
+		  select this option (if, for some reason, they need to disable it,
 		  then swapaccount=0 does the trick).
 
 
@@ -327,12 +342,9 @@ if KERNEL_CGROUPS
 		  the kmem extension can use it to guarantee that no group of processes
 		  will ever exhaust kernel resources alone.
 
-	config KERNEL_PERF_EVENTS
-		bool
-		default y if KERNEL_CGROUP_PERF
-
 	config KERNEL_CGROUP_PERF
 		bool "Enable perf_event per-cpu per-container group (cgroup) monitoring"
+		select KERNEL_PERF_EVENTS
 		default n
 		help
 		  This option extends the per-cpu mode to restrict monitoring to
@@ -426,14 +438,14 @@ if KERNEL_NAMESPACES
 		bool "UTS namespace"
 		default y
 		help
-		  In this namespace tasks see different info provided
-		  with the uname() system call
+		  In this namespace, tasks see different info provided
+		  with the uname() system call.
 
 	config KERNEL_IPC_NS
 		bool "IPC namespace"
 		default y
 		help
-		  In this namespace tasks work with IPC ids which correspond to
+		  In this namespace, tasks work with IPC ids which correspond to
 		  different IPC objects in different namespaces.
 
 	config KERNEL_USER_NS

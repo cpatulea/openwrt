@@ -55,8 +55,11 @@ ramips_board_detect() {
 	*"AsiaRF AWM002 EVB")
 		name="awm002-evb"
 		;;
-	*"BR6524N")
-		name="br6524n"
+	*"AsiaRF AWM003 EVB")
+		name="awm003-evb"
+		;;
+	*"AsiaRF AWAPN2403")
+		name="awapn2403"
 		;;
 	*"Asus WL-330N")
 		name="wl-330n"
@@ -69,6 +72,9 @@ ramips_board_detect() {
 		;;
 	*"Aztech HW550-3G")
 		name="hw550-3g"
+		;;
+	*"CY-SWR1100")
+		name="cy-swr1100"
 		;;
 	*"DCS-930")
 		name="dcs-930"
@@ -115,6 +121,9 @@ ramips_board_detect() {
 	*"ESR-9753")
 		name="esr-9753"
 		;;
+	*"EASYACC WI-STOR WIZARD 8800")
+		name="wizard8800"
+		;;
 	*"Edimax BR-6475nD")
 		name="br-6475nd"
 		;;
@@ -154,6 +163,12 @@ ramips_board_detect() {
 	*"HAME MPR-A2")
  		name="mpr-a2"
  		;;
+	*"Kingston MLW221")
+		name="mlw221"
+		;;
+	*"Planex MZK-750DHP")
+		name="mzk-750dhp"
+		;;
 	*"NBG-419N")
 		name="nbg-419n"
 		;;
@@ -171,6 +186,9 @@ ramips_board_detect() {
 		;;
 	*"Omnima MiniEMBWiFi")
 		name="omni-emb"
+		;;
+	*"Omnima MiniPlug")
+		name="omni-plug"
 		;;
 	*"Petatel PSR-680W"*)
 		name="psr-680w"
@@ -211,6 +229,9 @@ ramips_board_detect() {
 	*"RT-N56U")
 		name="rt-n56u"
 		;;
+	*"RUT5XX")
+		name="rut5xx"
+		;;
 	*"Skyline SL-R7205"*)
 		name="sl-r7205"
 		;;
@@ -219,6 +240,9 @@ ramips_board_detect() {
 		;;
 	*"V22RW-2X2")
 		name="v22rw-2x2"
+		;;
+	*"VoCore")
+		name="vocore"
 		;;
 	*"W502U")
 		name="w502u"
@@ -231,6 +255,9 @@ ramips_board_detect() {
 		;;
 	*"WHR-600D")
 		name="whr-600d"
+		;;
+	*"WHR-1166D")
+		name="whr-1166d"
 		;;
 	*"WHR-G300N")
 		name="whr-g300n"
@@ -289,8 +316,23 @@ ramips_board_detect() {
 	*"WRTNODE")
 		name="wrtnode"
 		;;
+	*"Wansview NCS601W")
+		name="ncs601w"
+		;;
 	*"Sercomm NA930")
 		name="na930"
+		;;
+	*"Zbtlink ZBT-WA05")
+		name="zbt-wa05"
+		;;
+	*"ZBT WR8305RT")
+		name="wr8305rt"
+		;;
+	*"Lenovo Y1")
+		name="y1"
+		;;
+	*"Lenovo Y1S")
+		name="y1s"
 		;;
 	*)
 		name="generic"

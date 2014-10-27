@@ -158,11 +158,12 @@ EOF
 ucidef_set_interface_raw() {
 	local cfg=$1
 	local ifname=$2
+	local proto=${3:-"none"}
 
 	uci batch <<EOF
 set network.$cfg='interface'
 set network.$cfg.ifname='$ifname'
-set network.$cfg.proto='none'
+set network.$cfg.proto='$proto'
 EOF
 }
 
@@ -172,6 +173,7 @@ ucidef_set_interface_lan() {
 	uci batch <<EOF
 set network.lan='interface'
 set network.lan.ifname='$ifname'
+set network.lan.force_link=1
 set network.lan.type='bridge'
 set network.lan.proto='static'
 set network.lan.ipaddr='192.168.1.1'

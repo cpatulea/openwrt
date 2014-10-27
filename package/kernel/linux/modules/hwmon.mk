@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2006-2010 OpenWrt.org
+# Copyright (C) 2006-2014 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -119,7 +119,7 @@ define KernelPackage/hwmon-lm75
   KCONFIG:=CONFIG_SENSORS_LM75
   FILES:=$(LINUX_DIR)/drivers/hwmon/lm75.ko
   AUTOLOAD:=$(call AutoProbe,lm75)
-  $(call AddDepends/hwmon,+kmod-i2c-core)
+  $(call AddDepends/hwmon,+kmod-i2c-core +PACKAGE_kmod-thermal:kmod-thermal)
 endef
 
 define KernelPackage/hwmon-lm75/description
@@ -238,7 +238,7 @@ define KernelPackage/hwmon-w83627hf
   $(call AddDepends/hwmon,@TARGET_rdc||TARGET_x86 +kmod-hwmon-vid)
 endef
 
-define KernelPacakge/hwmon-w83627hf/description
+define KernelPackage/hwmon-w83627hf/description
   Kernel module for the Winbond W83627HF chips.
 endef
 
@@ -253,8 +253,38 @@ define KernelPackage/hwmon-gsc
   $(call AddDepends/hwmon,+kmod-i2c-core)
 endef
 
-define KernelPacakge/hwmon-gsc/description
+define KernelPackage/hwmon-gsc/description
   Kernel module for the Gateworks System Controller chips.
 endef
 
 $(eval $(call KernelPackage,hwmon-gsc))
+
+
+define KernelPackage/hwmon-tmp421
+  TITLE:=TI TMP421 and compatible monitoring support
+  KCONFIG:=CONFIG_SENSORS_TMP421
+  FILES:=$(LINUX_DIR)/drivers/hwmon/tmp421.ko
+  AUTOLOAD:=$(call AutoLoad,60,tmp421)
+  $(call AddDepends/hwmon,+kmod-i2c-core)
+endef
+
+define KernelPackage/hwmon-tmp421/description
+  Kernel module for the Texas Instruments TMP421 and compatible chips.
+endef
+
+$(eval $(call KernelPackage,hwmon-tmp421))
+
+
+define KernelPackage/hwmon-gpiofan
+  TITLE:=Generic GPIO FAN support
+  KCONFIG:=CONFIG_SENSORS_GPIO_FAN
+  FILES:=$(LINUX_DIR)/drivers/hwmon/gpio-fan.ko
+  AUTOLOAD:=$(call AutoLoad,60,gpio-fan)
+  $(call AddDepends/hwmon,+kmod-i2c-core)
+endef
+
+define KernelPackage/hwmon-gpiofan/description
+  Kernel module for GPIO controlled FANs
+endef
+
+$(eval $(call KernelPackage,hwmon-gpiofan))

@@ -1,6 +1,6 @@
 --- a/arch/mips/ath79/machtypes.h
 +++ b/arch/mips/ath79/machtypes.h
-@@ -16,22 +16,142 @@
+@@ -16,22 +16,144 @@
  
  enum ath79_mach_type {
  	ATH79_MACH_GENERIC = 0,
@@ -29,6 +29,7 @@
 +	ATH79_MACH_DIR_505_A1,		/* D-Link DIR-505 rev. A1 */
 +	ATH79_MACH_DIR_600_A1,		/* D-Link DIR-600 rev. A1 */
 +	ATH79_MACH_DIR_615_C1,		/* D-Link DIR-615 rev. C1 */
++	ATH79_MACH_DIR_615_E1,		/* D-Link DIR-615 rev. E1 */
 +	ATH79_MACH_DIR_615_E4,		/* D-Link DIR-615 rev. E4 */
 +	ATH79_MACH_DIR_825_B1,		/* D-Link DIR-825 rev. B1 */
 +	ATH79_MACH_DIR_825_C1,		/* D-Link DIR-825 rev. C1 */
@@ -125,7 +126,8 @@
 +	ATH79_MACH_WLR8100,		/* SITECOM WLR-8100 */
 +	ATH79_MACH_WNDAP360,		/* NETGEAR WNDAP360 */
 +	ATH79_MACH_WNDR3700,		/* NETGEAR WNDR3700/WNDR3800/WNDRMAC */
-+	ATH79_MACH_WNDR4300,		/* NETGEAR WNDR3700v4/WNDR4300 */
++	ATH79_MACH_WNDR3700_V4,		/* NETGEAR WNDR3700v4 */
++	ATH79_MACH_WNDR4300,		/* NETGEAR WNDR4300 */
 +	ATH79_MACH_WNR2000,		/* NETGEAR WNR2000 */
 +	ATH79_MACH_WNR2000_V3,		/* NETGEAR WNR2000 v3 */
 +	ATH79_MACH_WNR2200,		/* NETGEAR WNR2200 */
@@ -154,7 +156,7 @@
 +	select SOC_AR71XX
 +	select ATH79_DEV_ETH
 +	select ATH79_DEV_GPIO_BUTTONS
-+	select ATH79_DEV_SPI
++	select ATH79_DEV_M25P80
 +	select ATH79_DEV_USB
 +
 +config ATH79_MACH_HORNET_UB
@@ -223,7 +225,7 @@
 +	select SOC_QCA955X
 +	select ATH79_DEV_GPIO_BUTTONS
 +	select ATH79_DEV_LEDS_GPIO
-+	select ATH79_DEV_SPI
++	select ATH79_DEV_M25P80
 +	select ATH79_DEV_USB
 +	select ATH79_DEV_WMAC
 +	help
@@ -236,7 +238,7 @@
 +	select ATH79_DEV_GPIO_BUTTONS
 +	select ATH79_DEV_LEDS_GPIO
 +	select ATH79_DEV_NFC
-+	select ATH79_DEV_SPI
++	select ATH79_DEV_M25P80
 +	select ATH79_DEV_USB
 +	select ATH79_DEV_WMAC
 +	help
@@ -348,7 +350,7 @@
 +	select ATH79_DEV_ETH
 +	select ATH79_DEV_GPIO_BUTTONS
 +	select ATH79_DEV_LEDS_GPIO
-+	select ATH79_DEV_SPI
++	select ATH79_DEV_M25P80
 +	select ATH79_DEV_USB
 +	select ATH79_DEV_WMAC
 +
@@ -423,7 +425,7 @@
 +	select ATH79_NVRAM
 +
 +config ATH79_MACH_DIR_600_A1
-+	bool "D-Link DIR-600 A1/DIR-615 E4 support"
++	bool "D-Link DIR-600 A1/DIR-615 E1/DIR-615 E4 support"
 +	select SOC_AR724X
 +	select ATH79_DEV_AP9X_PCI if PCI
 +	select ATH79_DEV_ETH
@@ -698,7 +700,8 @@
  	select ATH79_DEV_GPIO_BUTTONS
  	select ATH79_DEV_LEDS_GPIO
 -	select ATH79_DEV_NFC
- 	select ATH79_DEV_SPI
+-	select ATH79_DEV_SPI
++	select ATH79_DEV_M25P80
  	select ATH79_DEV_USB
  	select ATH79_DEV_WMAC
 -	help
@@ -902,7 +905,8 @@
  	select ATH79_DEV_ETH
  	select ATH79_DEV_GPIO_BUTTONS
  	select ATH79_DEV_LEDS_GPIO
- 	select ATH79_DEV_SPI
+-	select ATH79_DEV_SPI
++	select ATH79_DEV_M25P80
  	select ATH79_DEV_USB
 -	help
 -	  Say 'Y' here if you want your kernel to support the
