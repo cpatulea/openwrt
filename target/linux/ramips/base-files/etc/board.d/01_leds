@@ -27,6 +27,13 @@ case $board in
 	3g300m)
 		set_usb_led "tenda:blue:3g"
 		;;
+	ai-br100)
+		ucidef_set_led_netdev "wan" "wan" "aigale:blue:wan" "eth0.2"
+		set_wifi_led "aigale:blue:wlan"
+		;;
+	a5-v11)
+		ucidef_set_led_default "power" "POWER" "a5-v11:red:power" "1"
+		;;
 	air3gii)
 		set_wifi_led "airlive:green:wlan"
 		set_usb_led "airlive:green:mobile"
@@ -38,10 +45,9 @@ case $board in
 		ucidef_set_led_rssi "rssihigh" "RSSIHIGH" "all0256n:green:rssihigh" "wlan0" "70" "100" "-69" "8"
 		set_wifi_led "rt2800pci-phy0::radio"
 		;;
+	ar670w|\
+	ar725w|\
 	awapn2403)
-		set_wifi_led "rt2800soc-phy0::radio"
-		;;
-	ar725w)
 		set_wifi_led "rt2800soc-phy0::radio"
 		;;
 	asl26555)
@@ -112,10 +118,10 @@ case $board in
 	hlk-rm04)
 		set_wifi_led "rt2800pci-phy0::radio"
 		;;
-        ht-tm02)
-		ucidef_set_led_netdev "eth" "ETH" "ht-tm02:white:status" "eth0"
-		set_wifi_led "ht-tm02:blue:wifi"
-                ;;
+	ht-tm02)
+		ucidef_set_led_netdev "eth" "Ethernet" "ht-tm02:green:lan" "eth0"
+		set_wifi_led "ht-tm02:blue:wlan"
+		;;
 	all0239-3g|\
 	hw550-3g)
 		set_usb_led "hw550-3g:green:usb"
@@ -176,9 +182,9 @@ case $board in
 		set_usb_led "wcr150gn:amber:user"
 		;;
 	hg255d)
-    		set_wifi_led "hg255d:wlan"
-    		set_usb_led "hg255d:usb"
-    		ucidef_set_led_interface "lan" "hg255d:internet"
+		set_wifi_led "hg255d:wlan"
+		set_usb_led "hg255d:usb"
+		ucidef_set_led_interface "lan" "hg255d:internet"
 		;;
 	wnce2001)
 		set_wifi_led "netgear:green:wlan"
