@@ -269,6 +269,8 @@ define BuildImage/mkfs
   .PHONY: mkfs-$(1)
   mkfs-$(1): mkfs_prepare
 	$(Image/mkfs/$(1))
+	$(call Build/mkfs/default,$(1))
+	$(call Build/mkfs/$(1),$(1))
   $(KDIR)/root.$(1): mkfs-$(1)
 
 endef
@@ -305,7 +307,18 @@ define Build/append-rootfs
 endef
 
 define Build/pad-rootfs
-	$(call prepare_generic_squashfs,$@)
+	$(call prepare_generic_squashfs,$@ $(1))
+endef
+
+define Build/pad-offset
+	let \
+		size="$$(stat -c%s $@)" \
+		pad="$(word 1, $(1))" \
+		offset="$(word 2, $(1))" \
+		pad="(pad - ((size + offset) % pad)) % pad" \
+		newsize='size + pad'; \
+		dd if=$@ of=$@.new bs=$$newsize count=1 conv=sync
+	mv $@.new $@
 endef
 
 define Build/check-size
@@ -331,6 +344,7 @@ define Device/Init
   KERNEL_INITRAMFS_PREFIX = $$(IMAGE_PREFIX)-initramfs
   KERNEL_INITRAMFS_IMAGE = $$(KERNEL_INITRAMFS_PREFIX)$$(KERNEL_SUFFIX)
   KERNEL_INSTALL :=
+  KERNEL_NAME := vmlinux
   KERNEL_SIZE :=
 
   FILESYSTEMS := $(TARGET_FILESYSTEMS)
@@ -340,7 +354,7 @@ define Device/ExportVar
   $(1) : $(2):=$$($(2))
 
 endef
-Device/Export = $(foreach var,$(DEVICE_VARS) KERNEL,$(call Device/ExportVar,$(1),$(var)))
+Device/Export = $(foreach var,$(DEVICE_VARS) KERNEL KERNEL_INITRAMFS FILESYSTEM,$(call Device/ExportVar,$(1),$(var)))
 
 define Device/Check
   _TARGET = $$(if $$(filter $(PROFILE),$$(PROFILES)),install,install-disabled)
@@ -352,7 +366,7 @@ define Device/Build/initramfs
   $(BIN_DIR)/$$(KERNEL_INITRAMFS_IMAGE): $(KDIR)/$$(KERNEL_INITRAMFS_IMAGE)
 	cp $$^ $$@
 
-  $(KDIR)/$$(KERNEL_INITRAMFS_IMAGE): $(KDIR)/vmlinux-initramfs
+  $(KDIR)/$$(KERNEL_INITRAMFS_IMAGE): $(KDIR)/$$(KERNEL_NAME)-initramfs
 	@rm -f $$@
 	$$(call concat_cmd,$$(KERNEL_INITRAMFS))
 endef
@@ -365,16 +379,18 @@ define Device/Build/check_size
 endef
 
 define Device/Build/kernel
+  $(KDIR)/$$(KERNEL_NAME): image_prepare
   $$(_TARGET): $$(if $$(KERNEL_INSTALL),$(BIN_DIR)/$$(KERNEL_IMAGE))
   $(BIN_DIR)/$$(KERNEL_IMAGE): $(KDIR)/$$(KERNEL_IMAGE)
 	cp $$^ $$@
-  $(KDIR)/$$(KERNEL_IMAGE): $(KDIR)/vmlinux
+  $(KDIR)/$$(KERNEL_IMAGE): $(KDIR)/$$(KERNEL_NAME)
 	@rm -f $$@
 	$$(call concat_cmd,$$(KERNEL))
 	$$(if $$(KERNEL_SIZE),$$(call Device/Build/check_size,$$(KERNEL_SIZE)))
 endef
 
 define Device/Build/image
+  FILESYSTEM := $(1)
   $$(_TARGET): $(BIN_DIR)/$(call IMAGE_NAME,$(1),$(2))
   $(eval $(call Device/Export,$(KDIR)/$(KERNEL_IMAGE)))
   $(eval $(call Device/Export,$(KDIR)/$(KERNEL_INITRAMFS_IMAGE)))
@@ -384,6 +400,7 @@ define Device/Build/image
 	[ -f $$(word 1,$$^) -a -f $$(word 2,$$^) ]
 	$$(call concat_cmd,$(if $(IMAGE/$(2)/$(1)),$(IMAGE/$(2)/$(1)),$(IMAGE/$(2))))
 
+  .IGNORE: $(BIN_DIR)/$(call IMAGE_NAME,$(1),$(2))
   $(BIN_DIR)/$(call IMAGE_NAME,$(1),$(2)): $(KDIR)/$(call IMAGE_NAME,$(1),$(2))
 	cp $$^ $$@
 

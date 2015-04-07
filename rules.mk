@@ -30,6 +30,11 @@ define sep
 
 endef
 
+define newline
+
+
+endef
+
 _SINGLE=export MAKEFLAGS=$(space);
 CFLAGS:=
 ARCH:=$(subst i486,i386,$(subst i586,i386,$(subst i686,i386,$(call qstrip,$(CONFIG_ARCH)))))
@@ -111,7 +116,7 @@ STAGING_DIR_ROOT:=$(STAGING_DIR)/root-$(BOARD)
 BUILD_LOG_DIR:=$(TOPDIR)/logs
 PKG_INFO_DIR := $(STAGING_DIR)/pkginfo
 
-TARGET_PATH:=$(STAGING_DIR_HOST)/bin:$(subst $(space),:,$(filter-out .,$(filter-out ./,$(subst :,$(space),$(PATH)))))
+TARGET_PATH:=$(subst $(space),:,$(filter-out .,$(filter-out ./,$(subst :,$(space),$(PATH)))))
 TARGET_CFLAGS:=$(TARGET_OPTIMIZATION)$(if $(CONFIG_DEBUG), -g3) $(EXTRA_OPTIMIZATION)
 TARGET_CXXFLAGS = $(TARGET_CFLAGS)
 TARGET_ASFLAGS_DEFAULT = $(TARGET_CFLAGS)
@@ -202,6 +207,8 @@ else
   TARGET_NM:=$(TARGET_CROSS)nm
 endif
 
+BUILD_KEY=$(TOPDIR)/key-build
+
 TARGET_CC:=$(TARGET_CROSS)gcc
 TARGET_CXX:=$(TARGET_CROSS)g++
 KPATCH:=$(SCRIPT_DIR)/patch-kernel.sh
@@ -209,6 +216,12 @@ SED:=$(STAGING_DIR_HOST)/bin/sed -i -e
 CP:=cp -fpR
 LN:=ln -sf
 XARGS:=xargs -r
+
+BASH:=bash
+TAR:=tar
+FIND:=find
+PATCH:=patch
+PYTHON:=python
 
 INSTALL_BIN:=install -m0755
 INSTALL_DIR:=install -d -m0755
@@ -263,6 +276,7 @@ else
     NM="$(TARGET_CROSS)nm" \
     STRIP="$(STRIP)" \
     STRIP_KMOD="$(SCRIPT_DIR)/strip-kmod.sh" \
+    PATCHELF="$(STAGING_DIR_HOST)/bin/patchelf" \
     $(SCRIPT_DIR)/rstrip.sh
 endif
 

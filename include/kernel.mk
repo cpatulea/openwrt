@@ -1,5 +1,5 @@
-# 
-# Copyright (C) 2006-2011 OpenWrt.org
+#
+# Copyright (C) 2006-2015 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -35,9 +35,7 @@ else
   endif
   KERNEL_BUILD_DIR ?= $(BUILD_DIR)/linux-$(BOARD)$(if $(SUBTARGET),_$(SUBTARGET))
   LINUX_DIR ?= $(KERNEL_BUILD_DIR)/linux-$(LINUX_VERSION)
-  ifeq ($(strip $(call CompareKernelPatchVer,$(KERNEL_PATCHVER),ge,3.7.0)),1)
-    LINUX_UAPI_DIR=uapi/
-  endif
+  LINUX_UAPI_DIR=uapi/
   LINUX_VERMAGIC:=$(strip $(shell cat $(LINUX_DIR)/.vermagic 2>/dev/null))
   LINUX_VERMAGIC:=$(if $(LINUX_VERMAGIC),$(LINUX_VERMAGIC),unknown)
 
@@ -54,7 +52,7 @@ else
   LINUX_SOURCE:=linux-$(LINUX_VERSION).tar.xz
   TESTING:=$(if $(findstring -rc,$(LINUX_VERSION)),/testing,)
   ifeq ($(call qstrip,$(CONFIG_EXTERNAL_KERNEL_TREE))$(call qstrip,$(CONFIG_KERNEL_GIT_CLONE_URI)),)
-      LINUX_SITE:=@KERNEL/linux/kernel/v3.x$(TESTING)
+      LINUX_SITE:=@KERNEL/linux/kernel/v$(word 1,$(subst ., ,$(KERNEL_BASE))).x$(TESTING)
   endif
 
   ifneq ($(TARGET_BUILD),1)
@@ -159,6 +157,12 @@ define KernelPackage
     $(call KernelPackage/$(1)/$(BOARD))
   endef
 
+  ifdef KernelPackage/$(1)/conffiles
+    define Package/kmod-$(1)/conffiles
+$(call KernelPackage/$(1)/conffiles)
+    endef
+  endif
+
   ifdef KernelPackage/$(1)/description
     define Package/kmod-$(1)/description
 $(call KernelPackage/$(1)/description)
@@ -176,7 +180,7 @@ $(call KernelPackage/$(1)/config)
   ifneq ($(if $(filter-out %=y %=n %=m,$(KCONFIG)),$(filter m y,$(foreach c,$(filter-out %=y %=n %=m,$(KCONFIG)),$($(c)))),.),)
     ifneq ($(if $(SDK),$(filter-out $(LINUX_DIR)/%.ko,$(FILES)),$(strip $(FILES))),)
       define Package/kmod-$(1)/install
-		  @for mod in $$(FILES); do \
+		  @for mod in $$(call version_filter,$$(FILES)); do \
 			if [ -e $$$$$$$$mod ]; then \
 				mkdir -p $$(1)/$(MODULES_SUBDIR) ; \
 				$(CP) -L $$$$$$$$mod $$(1)/$(MODULES_SUBDIR)/ ; \
@@ -211,12 +215,14 @@ $(call KernelPackage/$(1)/config)
   $$(IPKG_kmod-$(1)): $$(wildcard $$(FILES))
 endef
 
+version_filter=$(if $(findstring @,$(1)),$(shell $(SCRIPT_DIR)/metadata.pl version_filter $(KERNEL_PATCHVER) $(1)),$(1))
+
 define AutoLoad
-  add_module "$(1)" "$(2)" "$(3)";
+  add_module "$(1)" "$(call version_filter,$(2))" "$(3)";
 endef
 
 define AutoProbe
-  probe_module "$(1)" "$(2)";
+  probe_module "$(call version_filter,$(1))" "$(2)";
 endef
 
 version_field=$(if $(word $(1),$(2)),$(word $(1),$(2)),0)

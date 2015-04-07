@@ -262,10 +262,12 @@ define KernelPackage/crypto-aes
   $(call AddDepends/crypto)
 endef
 
-define KernelPackage/crypto-aes/x86
-  FILES+=$(LINUX_DIR)/arch/x86/crypto/aes-i586.ko
-  AUTOLOAD:=$(call AutoLoad,09,aes-i586)
-endef
+ifndef CONFIG_TARGET_x86_64
+  define KernelPackage/crypto-aes/x86
+    FILES+=$(LINUX_DIR)/arch/x86/crypto/aes-i586.ko
+    AUTOLOAD:=$(call AutoLoad,09,aes-i586)
+  endef
+endif
 
 $(eval $(call KernelPackage,crypto-aes))
 
@@ -305,7 +307,7 @@ $(eval $(call KernelPackage,crypto-cbc))
 
 define KernelPackage/crypto-ctr
   TITLE:=Counter Mode CryptoAPI module
-  DEPENDS:=+kmod-crypto-manager +kmod-crypto-seqiv
+  DEPENDS:=+kmod-crypto-manager +kmod-crypto-seqiv +kmod-crypto-iv
   KCONFIG:=CONFIG_CRYPTO_CTR
   FILES:=$(LINUX_DIR)/crypto/ctr.ko
   AUTOLOAD:=$(call AutoLoad,09,ctr)
@@ -313,6 +315,17 @@ define KernelPackage/crypto-ctr
 endef
 
 $(eval $(call KernelPackage,crypto-ctr))
+
+define KernelPackage/crypto-ccm
+ TITLE:=Support for Counter with CBC MAC (CCM)
+ DEPENDS:=+kmod-crypto-ctr +kmod-crypto-aead
+ KCONFIG:=CONFIG_CRYPTO_CCM
+ FILES:=$(LINUX_DIR)/crypto/ccm.ko
+ AUTOLOAD:=$(call AutoLoad,09,ccm)
+ $(call AddDepends/crypto)
+endef
+
+$(eval $(call KernelPackage,crypto-ccm))
 
 define KernelPackage/crypto-pcbc
   TITLE:=Propagating Cipher Block Chaining CryptoAPI module
@@ -329,13 +342,10 @@ define KernelPackage/crypto-crc32c
   TITLE:=CRC32c CRC module
   DEPENDS:=+kmod-crypto-hash
   KCONFIG:=CONFIG_CRYPTO_CRC32C
-ifeq ($(strip $(call CompareKernelPatchVer,$(KERNEL_PATCHVER),ge,3.15.0)),1)
-  FILES:=$(LINUX_DIR)/crypto/crc32c_generic.ko
-  AUTOLOAD:=$(call AutoLoad,04,crc32c_generic,1)
-else
-  FILES:=$(LINUX_DIR)/crypto/crc32c.ko
-  AUTOLOAD:=$(call AutoLoad,04,crc32c,1)
-endif
+  FILES:= \
+	$(LINUX_DIR)/crypto/crc32c.ko@lt3.15 \
+	$(LINUX_DIR)/crypto/crc32c_generic.ko@ge3.15
+  AUTOLOAD:=$(call AutoLoad,04,crc32c@lt3.15 crc32c_generic@ge3.15,1)
   $(call AddDepends/crypto)
 endef
 
@@ -495,13 +505,6 @@ endef
 $(eval $(call KernelPackage,crypto-sha256))
 
 
-ifeq ($(strip $(call CompareKernelPatchVer,$(KERNEL_PATCHVER),ge,3.6.0)),1)
-camellia_mod_suffix=_generic
-endif
-ifeq ($(strip $(call CompareKernelPatchVer,$(KERNEL_PATCHVER),ge,3.7.0)),1)
-cast56_mod_suffix=_generic
-endif
-
 define KernelPackage/crypto-misc
   TITLE:=Other CryptoAPI modules
   DEPENDS:=+kmod-crypto-manager
@@ -523,10 +526,10 @@ define KernelPackage/crypto-misc
 	CONFIG_CRYPTO_WP512
   FILES:= \
 	$(LINUX_DIR)/crypto/anubis.ko \
-	$(LINUX_DIR)/crypto/camellia$(camellia_mod_suffix).ko \
-	$(if $(call kernel_patchver_ge,3.7),$(LINUX_DIR)/crypto/cast_common.ko) \
-	$(LINUX_DIR)/crypto/cast5$(cast56_mod_suffix).ko \
-	$(LINUX_DIR)/crypto/cast6$(cast56_mod_suffix).ko \
+	$(LINUX_DIR)/crypto/camellia_generic.ko \
+	$(LINUX_DIR)/crypto/cast_common.ko \
+	$(LINUX_DIR)/crypto/cast5_generic.ko \
+	$(LINUX_DIR)/crypto/cast6_generic.ko \
 	$(LINUX_DIR)/crypto/khazad.ko \
 	$(LINUX_DIR)/crypto/sha512_generic.ko \
 	$(LINUX_DIR)/crypto/tea.ko \
@@ -540,9 +543,11 @@ define KernelPackage/crypto-misc
   $(call AddDepends/crypto)
 endef
 
-define KernelPackage/crypto-misc/x86
-  FILES+=$(LINUX_DIR)/arch/x86/crypto/twofish-i586.ko
-endef
+ifndef CONFIG_TARGET_x86_64
+  define KernelPackage/crypto-misc/x86
+    FILES+=$(LINUX_DIR)/arch/x86/crypto/twofish-i586.ko
+  endef
+endif
 
 $(eval $(call KernelPackage,crypto-misc))
 

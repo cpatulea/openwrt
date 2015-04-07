@@ -43,8 +43,10 @@ ramips_setup_interfaces()
 		ucidef_add_switch_vlan "switch0" "1" "0 6t"
 		;;
 
+	3g150b | \
 	3g300m | \
 	w150m | \
+	zte-q7 | \
 	all0256n | \
 	all5002 | \
 	all5003 | \
@@ -60,6 +62,14 @@ ramips_setup_interfaces()
 	3g-6200nl | \
 	mlw221)
 		ucidef_set_interface_lan "eth0.2"
+		;;
+	mlwg2)
+		ucidef_set_interface_lan "eth0.1"
+		;;
+
+	m2m)
+		ucidef_add_switch "switch0" "4"
+		ucidef_set_interface_lan "eth0"
 		;;
 
 	wizard8800 | \
@@ -110,6 +120,7 @@ ramips_setup_interfaces()
 	dir-300-b7 | \
 	dir-320-b1 | \
 	dir-615-h1 | \
+	firewrt | \
 	hlk-rm04 | \
 	mt7621 | \
 	mt7628 | \
@@ -120,6 +131,7 @@ ramips_setup_interfaces()
 	wsr-600 | \
 	wsr-1166 | \
 	wt1520 | \
+	xiaomi-miwifi-mini |\
 	y1)
 		ucidef_set_interfaces_lan_wan "eth0.1" "eth0.2"
 		ucidef_add_switch "switch0" "1" "1"
@@ -138,6 +150,7 @@ ramips_setup_interfaces()
 	awm003-evb | \
 	argus-atp52b | \
 	dir-645 | \
+	dir-860l-b1 | \
 	f5d8235-v1 | \
 	f5d8235-v2 | \
 	hg255d | \
@@ -230,6 +243,12 @@ ramips_setup_interfaces()
 		ucidef_add_switch_vlan "switch1" "2" "4 6t"
 		;;
 
+	wzr-agl300nh)
+		ucidef_set_interfaces_lan_wan "eth0.1" "eth0.2"
+		ucidef_add_switch "switch0" "1" "1"
+		ucidef_add_switch_vlan "switch0" "1" "1 2 3 4 5t"
+		ucidef_add_switch_vlan "switch0" "2" "0 5t"
+		;;
 	*)
 		RT3X5X=`cat /proc/cpuinfo | egrep "(RT3.5|RT5350)"`
 		if [ -n "${RT3X5X}" ]; then
@@ -329,6 +348,15 @@ ramips_setup_macs()
 		wan_mac=$(mtd_get_mac_binary factory 46)
 		;;
 
+	wsr-600)
+		wan_mac=$(mtd_get_mac_binary factory 4)
+		lan_mac=$wan_mac
+		;;
+	wsr-1166)
+		local index="$(find_mtd_index "board_data")"
+		wan_mac="$(grep -m1 mac= "/dev/mtd${index}" | cut -d= -f2)"
+		lan_mac=$wan_mac
+		;;
 	*)
 		lan_mac=$(cat /sys/class/net/eth0/address)
 		wan_mac=$(macaddr_add "$lan_mac" 1)
