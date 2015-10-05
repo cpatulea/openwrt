@@ -148,7 +148,6 @@ $(eval $(call KernelPackage,8021q))
 define KernelPackage/udptunnel4
   SUBMENU:=$(NETWORK_SUPPORT_MENU)
   TITLE:=IPv4 UDP tunneling support
-  DEPENDS:=@!LINUX_3_10 @!LINUX_3_14
   KCONFIG:=CONFIG_NET_UDP_TUNNEL
   FILES:=$(LINUX_DIR)/net/ipv4/udp_tunnel.ko
   AUTOLOAD:=$(call AutoLoad,32,udp_tunnel)
@@ -160,7 +159,6 @@ $(eval $(call KernelPackage,udptunnel4))
 define KernelPackage/udptunnel6
   SUBMENU:=$(NETWORK_SUPPORT_MENU)
   TITLE:=IPv6 UDP tunneling support
-  DEPENDS:=@!LINUX_3_10 @!LINUX_3_14
   KCONFIG:=CONFIG_NET_UDP_TUNNEL
   FILES:=$(LINUX_DIR)/net/ipv6/ip6_udp_tunnel.ko
   AUTOLOAD:=$(call AutoLoad,32,ip6_udp_tunnel)
@@ -174,8 +172,8 @@ define KernelPackage/vxlan
   TITLE:=Native VXLAN Kernel support
   DEPENDS:= \
 	+kmod-iptunnel \
-	+(!LINUX_3_10&&!LINUX_3_14):kmod-udptunnel4 \
-	+(!LINUX_3_10&&!LINUX_3_14&&IPV6):kmod-udptunnel6
+	+kmod-udptunnel4 \
+	+IPV6:kmod-udptunnel6
   KCONFIG:=CONFIG_VXLAN
   FILES:=$(LINUX_DIR)/drivers/net/vxlan.ko
   AUTOLOAD:=$(call AutoLoad,13,vxlan)
@@ -441,7 +439,7 @@ $(eval $(call KernelPackage,iptunnel4))
 define KernelPackage/iptunnel6
   SUBMENU:=$(NETWORK_SUPPORT_MENU)
   TITLE:=IPv6 tunneling
-  DEPENDS:= +kmod-ipv6
+  DEPENDS:=@IPV6
   KCONFIG:= \
 	CONFIG_INET6_TUNNEL
   FILES:=$(LINUX_DIR)/net/ipv6/tunnel6.ko
@@ -458,15 +456,16 @@ $(eval $(call KernelPackage,iptunnel6))
 define KernelPackage/ipv6
   SUBMENU:=$(NETWORK_SUPPORT_MENU)
   TITLE:=IPv6 support
+  DEPENDS:=@IPV6
+  HIDDEN:=1
+  DEFAULT:=y
   KCONFIG:= \
-	CONFIG_IPV6 \
+	CONFIG_IPV6=y \
 	CONFIG_IPV6_PRIVACY=y \
 	CONFIG_IPV6_MULTIPLE_TABLES=y \
 	CONFIG_IPV6_MROUTE=y \
 	CONFIG_IPV6_PIMSM_V2=n \
 	CONFIG_IPV6_SUBTREES=y
-  FILES:=$(LINUX_DIR)/net/ipv6/ipv6.ko
-  AUTOLOAD:=$(call AutoLoad,20,ipv6)
 endef
 
 define KernelPackage/ipv6/description
@@ -478,7 +477,7 @@ $(eval $(call KernelPackage,ipv6))
 
 define KernelPackage/sit
   SUBMENU:=$(NETWORK_SUPPORT_MENU)
-  DEPENDS:=+kmod-ipv6 +kmod-iptunnel +kmod-iptunnel4
+  DEPENDS:=@IPV6 +kmod-iptunnel +kmod-iptunnel4
   TITLE:=IPv6-in-IPv4 tunnel
   KCONFIG:=CONFIG_IPV6_SIT \
 	CONFIG_IPV6_SIT_6RD=y
@@ -496,7 +495,7 @@ $(eval $(call KernelPackage,sit))
 define KernelPackage/ip6-tunnel
   SUBMENU:=$(NETWORK_SUPPORT_MENU)
   TITLE:=IP-in-IPv6 tunnelling
-  DEPENDS:= +kmod-ipv6 +kmod-iptunnel6
+  DEPENDS:=@IPV6 +kmod-iptunnel6
   KCONFIG:= CONFIG_IPV6_TUNNEL
   FILES:=$(LINUX_DIR)/net/ipv6/ip6_tunnel.ko
   AUTOLOAD:=$(call AutoLoad,32,ip6_tunnel)
@@ -512,7 +511,7 @@ $(eval $(call KernelPackage,ip6-tunnel))
 define KernelPackage/gre
   SUBMENU:=$(NETWORK_SUPPORT_MENU)
   TITLE:=GRE support
-  DEPENDS:=+PACKAGE_kmod-ipv6:kmod-ipv6 +kmod-iptunnel
+  DEPENDS:=+kmod-iptunnel
   KCONFIG:=CONFIG_NET_IPGRE CONFIG_NET_IPGRE_DEMUX
   FILES:=$(LINUX_DIR)/net/ipv4/ip_gre.ko $(LINUX_DIR)/net/ipv4/gre.ko
   AUTOLOAD:=$(call AutoLoad,39,gre ip_gre)
@@ -528,7 +527,7 @@ $(eval $(call KernelPackage,gre))
 define KernelPackage/gre6
   SUBMENU:=$(NETWORK_SUPPORT_MENU)
   TITLE:=GRE support over IPV6
-  DEPENDS:=+kmod-ipv6 +kmod-iptunnel +kmod-ip6-tunnel
+  DEPENDS:=@IPV6 +kmod-iptunnel +kmod-ip6-tunnel
   KCONFIG:=CONFIG_IPV6_GRE
   FILES:=$(LINUX_DIR)/net/ipv6/ip6_gre.ko
   AUTOLOAD:=$(call AutoLoad,39,ip6_gre)
@@ -715,7 +714,7 @@ $(eval $(call KernelPackage,ipoa))
 define KernelPackage/mppe
   SUBMENU:=$(NETWORK_SUPPORT_MENU)
   TITLE:=Microsoft PPP compression/encryption
-  DEPENDS:=kmod-ppp +kmod-crypto-core +kmod-crypto-arc4 +kmod-crypto-sha1 +kmod-crypto-ecb
+  DEPENDS:=kmod-ppp +kmod-crypto-sha1 +kmod-crypto-ecb
   KCONFIG:= \
 	CONFIG_PPP_MPPE_MPPC \
 	CONFIG_PPP_MPPE
@@ -804,6 +803,8 @@ define KernelPackage/sched
 	CONFIG_NET_SCH_TBF \
 	CONFIG_NET_SCH_SFQ \
 	CONFIG_NET_SCH_TEQL \
+	CONFIG_NET_SCH_FQ \
+	CONFIG_NET_SCH_PIE \
 	CONFIG_NET_CLS_BASIC \
 	CONFIG_NET_ACT_POLICE \
 	CONFIG_NET_ACT_IPT \
@@ -862,9 +863,8 @@ define KernelPackage/l2tp
   SUBMENU:=$(NETWORK_SUPPORT_MENU)
   TITLE:=Layer Two Tunneling Protocol (L2TP)
   DEPENDS:= \
-	+IPV6:kmod-ipv6 \
-	+(!LINUX_3_10&&!LINUX_3_14):kmod-udptunnel4 \
-	+(!LINUX_3_10&&!LINUX_3_14&&IPV6):kmod-udptunnel6
+	+kmod-udptunnel4 \
+	+IPV6:kmod-udptunnel6
   KCONFIG:=CONFIG_L2TP \
 	CONFIG_L2TP_V3=y \
 	CONFIG_L2TP_DEBUGFS=n
@@ -900,8 +900,10 @@ define KernelPackage/l2tp-ip
   TITLE:=L2TP IP encapsulation for L2TPv3
   DEPENDS:=+kmod-l2tp
   KCONFIG:=CONFIG_L2TP_IP
-  FILES:=$(LINUX_DIR)/net/l2tp/l2tp_ip.ko
-  AUTOLOAD:=$(call AutoLoad,33,l2tp_ip)
+  FILES:= \
+	$(LINUX_DIR)/net/l2tp/l2tp_ip.ko \
+	$(if $(CONFIG_IPV6),$(LINUX_DIR)/net/l2tp/l2tp_ip6.ko)
+  AUTOLOAD:=$(call AutoLoad,33,l2tp_ip $(if $(CONFIG_IPV6),l2tp_ip6))
 endef
 
 define KernelPackage/l2tp-ip/description
@@ -928,7 +930,7 @@ define KernelPackage/sctp
      CONFIG_SCTP_DEFAULT_COOKIE_HMAC_MD5=y
   FILES:= $(LINUX_DIR)/net/sctp/sctp.ko
   AUTOLOAD:= $(call AutoLoad,32,sctp)
-  DEPENDS:=+kmod-lib-crc32c +kmod-crypto-md5 +kmod-crypto-hmac +IPV6:kmod-ipv6
+  DEPENDS:=+kmod-lib-crc32c +kmod-crypto-md5 +kmod-crypto-hmac
 endef
 
 define KernelPackage/sctp/description
@@ -995,7 +997,7 @@ define KernelPackage/rxrpc
 	$(LINUX_DIR)/net/rxrpc/af-rxrpc.ko \
 	$(LINUX_DIR)/net/rxrpc/rxkad.ko
   AUTOLOAD:=$(call AutoLoad,30,rxkad af-rxrpc)
-  DEPENDS:=+kmod-crypto-core +kmod-crypto-manager +kmod-crypto-pcbc +kmod-crypto-fcrypt
+  DEPENDS:= +kmod-crypto-manager +kmod-crypto-pcbc +kmod-crypto-fcrypt
 endef
 
 define KernelPackage/rxrpc/description

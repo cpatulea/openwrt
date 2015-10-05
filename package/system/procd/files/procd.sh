@@ -12,7 +12,7 @@
 # procd_set_param(type, [value...])
 #   Available types:
 #     command: command line (array).
-#     respawn info: array with 3 values $restart_timeout $fail_hreshold $max_fail
+#     respawn info: array with 3 values $fail_threshold $restart_timeout $max_fail
 #     env: environment variable (passed to the process)
 #     data: arbitrary name/value pairs for detecting config changes (table)
 #     file: configuration files (array)
@@ -222,7 +222,6 @@ _procd_add_interface_trigger() {
 	json_close_array
 
 	json_close_array
-
 	json_close_array
 }
 
@@ -415,7 +414,6 @@ _procd_wrapper \
 	procd_add_interface_trigger \
 	procd_add_reload_trigger \
 	procd_add_reload_interface_trigger \
-	procd_add_interface_reload \
 	procd_open_trigger \
 	procd_close_trigger \
 	procd_open_instance \

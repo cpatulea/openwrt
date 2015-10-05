@@ -45,7 +45,8 @@ platform_expected_image() {
 		"Linksys WRT150N V1")	echo "cybertan N150"; return;;
 		"Linksys WRT160N V1")	echo "cybertan N150"; return;;
 		"Linksys WRT160N V3")	echo "cybertan N150"; return;;
-		"Linksys WRT300N V1.1")	echo "cybertan EWCB"; return;;
+		"Linksys WRT300N V1")	echo "cybertan EWCB"; return;;
+		"Linksys WRT300N V1.1")	echo "cybertan EWC2"; return;;
 		"Linksys WRT310N V1")	echo "cybertan 310N"; return;;
 		"Linksys WRT310N V2")	echo "cybertan 310N"; return;;
 		"Linksys WRT610N V1")	echo "cybertan 610N"; return;;
@@ -77,20 +78,6 @@ brcm47xx_identify() {
 	echo "unknown"
 }
 
-# $(1): image that should contain trx
-# $(2): trx offset in image
-platform_check_image_trx() {
-	local magic=$(get_magic_long_at "$1" $2)
-
-	[ "$magic" != "48445230" ] && {
-		return 1
-	}
-
-	# TODO: Check crc32
-
-	return 0
-}
-
 platform_check_image() {
 	[ "$#" -gt 1 ] && return 1
 
@@ -111,7 +98,7 @@ platform_check_image() {
 				error=1
 			}
 
-			if ! platform_check_image_trx "$1" "$header_len"; then
+			if ! otrx check "$1" -o "$header_len"; then
 				echo "No valid TRX firmware in the CHK image"
 				error=1
 			fi
@@ -126,12 +113,16 @@ platform_check_image() {
 				error=1
 			}
 
-			if ! platform_check_image_trx "$1" 32; then
+			if ! otrx check "$1" -o 32; then
 				echo "No valid TRX firmware in the CyberTAN image"
 				error=1
 			fi
 		;;
 		"trx")
+			if ! otrx check "$1"; then
+				echo "Invalid (corrupted?) TRX firmware"
+				error=1
+			fi
 		;;
 		*)
 			echo "Invalid image type. Please use only .trx files"
@@ -142,29 +133,25 @@ platform_check_image() {
 	return $error
 }
 
-platform_do_upgrade_chk() {
+platform_trx_from_chk_cmd() {
 	local header_len=$((0x$(get_magic_long_at "$1" 4)))
-	local trx="/tmp/$1.trx"
 
-	dd if="$1" of="$trx" bs=$header_len skip=1
-	shift
-	default_do_upgrade "$trx" "$@"
+	echo -n dd bs=$header_len skip=1
 }
 
-platform_do_upgrade_cybertan() {
-	local trx="/tmp/$1.trx"
-
-	dd if="$1" of="$trx" bs=32 skip=1
-	shift
-	default_do_upgrade "$trx" "$@"
+platform_trx_from_cybertan_cmd() {
+	echo -n dd bs=32 skip=1
 }
 
 platform_do_upgrade() {
 	local file_type=$(brcm47xx_identify "$1")
+	local trx="$1"
+	local cmd=""
 
 	case "$file_type" in
-		"chk")		platform_do_upgrade_chk "$ARGV";;
-		"cybertan")	platform_do_upgrade_cybertan "$ARGV";;
-		*)		default_do_upgrade "$ARGV";;
+		"chk")		cmd=$(platform_trx_from_chk_cmd "$trx");;
+		"cybertan")	cmd=$(platform_trx_from_cybertan_cmd "$trx");;
 	esac
+
+	default_do_upgrade "$trx" "$cmd"
 }

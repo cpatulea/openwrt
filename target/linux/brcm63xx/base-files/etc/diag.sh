@@ -39,13 +39,17 @@ set_state() {
 	vr-3025u)
 		status_led="VR-3025u:green:power"
 		;;
+	vr-3026e)
+		status_led="VR-3026e:green:power"
+		;;
 	wap-5813n)
 		status_led="WAP-5813n:green:power"
 		;;
 	ar1004g)
 		status_led="AR1004G:green:power"
 		;;
-	dsl-274xb-c)
+	dsl-274xb-c|\
+	dsl-274xb-f)
 		status_led="dsl-274xb:green:power"
 		;;
 	dsl-275xb-d)
@@ -69,6 +73,9 @@ set_state() {
 	fast2504n)
 		status_led="fast2504n:green:ok"
 		;;
+	fast2704n)
+		status_led2="F@ST2704N:red:power"
+		;;
 	fast2704v2)
 		status_led="F@ST2704V2:green:power"
 		;;
@@ -88,6 +95,9 @@ set_state() {
 		;;
 	hg520)
 		status_led="HW520:green:net"
+		;;
+	hg655b)
+		status_led="HW65x:green:power"
 		;;
 	p870hw-51a_v2)
 		status_led="P870HW-51a:green:power"

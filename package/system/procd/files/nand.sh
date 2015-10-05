@@ -348,8 +348,14 @@ nand_do_platform_check() {
 		return 1
 	}
 
-	echo -n $2 > /tmp/sysupgrade-nand-path
-	cp /sbin/upgraded /tmp/
-
 	return 0
+}
+
+# Start NAND upgrade process
+#
+# $(1): file to be used for upgrade
+nand_do_upgrade() {
+	echo -n $1 > /tmp/sysupgrade-nand-path
+	cp /sbin/upgraded /tmp/
+	nand_upgrade_stage1
 }

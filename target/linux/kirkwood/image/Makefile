@@ -4,10 +4,11 @@
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
 #
-include $(TOPDIR)/rules.mk
-include $(INCLUDE_DIR)/image.mk
 
 NAND_BLOCKSIZE := 2048-128k
+
+include $(TOPDIR)/rules.mk
+include $(INCLUDE_DIR)/image.mk
 
 define sanitize_profile_name
 $(shell echo $(PROFILE) | tr '[:upper:]' '[:lower:]')
@@ -122,6 +123,9 @@ Image/InstallKernel/Template/EA3500=$(call Image/InstallKernel/Template,ea3500)
 
 Image/BuildKernel/Template/EA4500=$(call Image/BuildKernel/Template,ea4500)
 Image/InstallKernel/Template/EA4500=$(call Image/InstallKernel/Template,ea4500)
+
+Image/BuildKernel/Template/GOFLEXHOME=$(call Image/BuildKernel/Template,goflexhome)
+Image/InstallKernel/Template/GOFLEXHOME=$(call Image/InstallKernel/Template,goflexhome)
 
 Image/BuildKernel/Template/GOFLEXNET=$(call Image/BuildKernel/Template,goflexnet)
 Image/InstallKernel/Template/GOFLEXNET=$(call Image/InstallKernel/Template,goflexnet)

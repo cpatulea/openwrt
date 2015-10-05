@@ -21,7 +21,7 @@ drv_mac80211_init_device_config() {
 	config_add_string hwmode
 	config_add_int beacon_int chanbw frag rts
 	config_add_int rxantenna txantenna antenna_gain txpower distance
-	config_add_boolean noscan
+	config_add_boolean noscan ht_coex
 	config_add_array ht_capab
 	config_add_boolean \
 		rxldpc \
@@ -55,6 +55,7 @@ drv_mac80211_init_iface_config() {
 	config_add_int maxassoc
 	config_add_int max_listen_int
 	config_add_int dtim_period
+	config_add_int start_disabled
 
 	# mesh
 	config_add_string mesh_id
@@ -89,7 +90,7 @@ mac80211_hostapd_setup_base() {
 
 	[ "$auto_channel" -gt 0 ] && channel=acs_survey
 
-	json_get_vars noscan
+	json_get_vars noscan ht_coex
 	json_get_values ht_capab_list ht_capab
 
 	ieee80211n=1
@@ -125,6 +126,9 @@ mac80211_hostapd_setup_base() {
 
 	[ -n "$ieee80211n" ] && {
 		append base_cfg "ieee80211n=1" "$N"
+
+		set_default ht_coex 0
+		append base_cfg "ht_coex=$ht_coex" "$N"
 
 		json_get_vars \
 			ldpc:1 \
@@ -314,12 +318,13 @@ mac80211_hostapd_setup_bss() {
 	append hostapd_cfg "$type=$ifname" "$N"
 
 	hostapd_set_bss_options hostapd_cfg "$vif" || return 1
-	json_get_vars wds dtim_period max_listen_int
+	json_get_vars wds dtim_period max_listen_int start_disabled
 
 	set_default wds 0
+	set_default start_disabled 0
 
 	[ "$wds" -gt 0 ] && append hostapd_cfg "wds_sta=1" "$N"
-	[ "$staidx" -gt 0 ] && append hostapd_cfg "start_disabled=1" "$N"
+	[ "$staidx" -gt 0 -o "$start_disabled" -eq 1 ] && append hostapd_cfg "start_disabled=1" "$N"
 
 	cat >> /var/run/hostapd-$phy.conf <<EOF
 $hostapd_cfg
@@ -445,7 +450,7 @@ mac80211_prepare_vif() {
 			mac80211_hostapd_setup_bss "$phy" "$ifname" "$macaddr" "$type" || return
 
 			[ -n "$hostapd_ctrl" ] || {
-				iw phy "$phy" interface add "$ifname" type managed
+				iw phy "$phy" interface add "$ifname" type __ap
 				hostapd_ctrl="${hostapd_ctrl:-/var/run/hostapd/$ifname}"
 			}
 		;;
@@ -481,7 +486,7 @@ mac80211_prepare_vif() {
 		# All interfaces must have unique mac addresses
 		# which can either be explicitly set in the device
 		# section, or automatically generated
-		ifconfig "$ifname" hw ether "$macaddr"
+		ip link set dev "$ifname" address "$macaddr"
 	fi
 
 	json_select ..
@@ -577,7 +582,7 @@ mac80211_setup_vif() {
 	json_get_vars mode
 	json_get_var vif_txpower txpower
 
-	ifconfig "$ifname" up || {
+	ip link set dev "$ifname" up || {
 		wireless_setup_vif_failed IFUP_ERROR
 		json_select ..
 		return
@@ -588,23 +593,22 @@ mac80211_setup_vif() {
 
 	case "$mode" in
 		mesh)
-			for var in $MP_CONFIG_INT $MP_CONFIG_BOOL $MP_CONFIG_STRING; do
-				json_get_var mp_val "$var"
-				[ -n "$mp_val" ] && iw dev "$ifname" set mesh_param "$var" "$mp_val"
-			done
-
-			# authsae
+			# authsae or wpa_supplicant
 			json_get_vars key
 			if [ -n "$key" ]; then
 				if [ -e "/lib/wifi/authsae.sh" ]; then
 					. /lib/wifi/authsae.sh
 					authsae_start_interface || failed=1
 				else
-					wireless_setup_vif_failed AUTHSAE_NOT_INSTALLED
-					json_select ..
-					return
+					wireless_vif_parse_encryption
+					mac80211_setup_supplicant || failed=1
 				fi
 			fi
+
+			for var in $MP_CONFIG_INT $MP_CONFIG_BOOL $MP_CONFIG_STRING; do
+				json_get_var mp_val "$var"
+				[ -n "$mp_val" ] && iw dev "$ifname" set mesh_param "$var" "$mp_val"
+			done
 		;;
 		adhoc)
 			wireless_vif_parse_encryption
@@ -634,7 +638,7 @@ mac80211_interface_cleanup() {
 	local phy="$1"
 
 	for wdev in $(list_phy_interfaces "$phy"); do
-		ifconfig "$wdev" down 2>/dev/null
+		ip link set dev "$wdev" down 2>/dev/null
 		iw dev "$wdev" del
 	done
 }
