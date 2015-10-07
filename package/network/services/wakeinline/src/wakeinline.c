@@ -16,8 +16,100 @@ ip6tables -A forwarding_wan_rule -p tcp --syn --dport 22 -j NFQUEUE --queue-num 
 #include <netdb.h>
 #include <string.h>
 #include <libnetfilter_queue/libnetfilter_queue.h>
+#include <sys/ioctl.h>
+#include <net/if.h>
+#include <netinet/ether.h>
+#include <strings.h>
 
 #define ARRAY_SIZE(a) (sizeof(a)/sizeof((a)[0]))
+
+static int my_ether_hostton(const char *hostname, struct ether_addr *e) {
+  int rc = -1;
+
+  FILE *fp = fopen("/etc/ethers", "r");
+  if (fp == NULL) {
+    return rc;
+  }
+
+  char line_e[20], line_hostname[50];
+  while (!feof(fp) && !ferror(fp)) {
+    if (fscanf(fp, "%20s %50s", line_e, line_hostname) == 2) {
+      if (!strcasecmp(line_hostname, hostname)) {
+        if (!ether_aton_r(line_e, e)) {
+          break;
+        }
+
+        rc = 0;
+        break;
+      }
+    }
+  }
+
+  fclose(fp);
+  return rc;
+}
+
+static void wake(const char *dst, u_int32_t outdev) {
+  int fd;
+  struct ifreq ifr;
+
+  // host -> ether
+  struct ether_addr ea;
+  if (my_ether_hostton(dst, &ea) < 0) {
+    perror("ether_hostton");
+    return;
+  }
+
+  fprintf(stderr, "ea: %s\n", ether_ntoa(&ea));
+
+  // outdev -> broadaddr
+  fd = socket(AF_INET, SOCK_DGRAM, 0);
+  assert(fd >= 0);
+
+  ifr.ifr_ifindex = outdev;
+  if (ioctl(fd, SIOCGIFNAME, &ifr) < 0) {
+    perror("ioctl(SIOCGIFNAME)");
+    goto out;
+  }
+
+  fprintf(stderr, "ifname: %s\n", ifr.ifr_name);
+
+  if (ioctl(fd, SIOCGIFBRDADDR, &ifr) < 0) {
+    perror("ioctl(SIOCGIFBRDADDR)");
+    goto out;
+  }
+
+  if (ifr.ifr_broadaddr.sa_family != AF_INET) {
+    fprintf(stderr, "weird broadaddr af: %d\n", ifr.ifr_broadaddr.sa_family);
+    goto out;
+  }
+
+  struct sockaddr_in *sin = (struct sockaddr_in *)&ifr.ifr_broadaddr;
+  fprintf(stderr, "brdaddr: %s\n", inet_ntoa(sin->sin_addr));
+
+  // wake
+  int one = 1;
+  if (setsockopt(fd, SOL_SOCKET, SO_BROADCAST, &one, sizeof(one)) < 0) {
+    perror("setsockopt(SO_BROADCAST)");
+    goto out;
+  }
+
+  char magic[6 + 16*6];
+  memset(magic, 0xff, 6);
+  for (int i = 6; i < sizeof(magic); i += 6) {
+    memcpy(&magic[i], &ea.ether_addr_octet, 6);
+  }
+
+  sin->sin_port = htons(9);  // discard
+  if (sendto(fd, magic, sizeof(magic), 0, (struct sockaddr *)sin,
+             sizeof(*sin)) < 0) {
+    perror("sendto");
+    goto out;
+  }
+
+out:
+  close(fd);
+}
 
 static int cb(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
               struct nfq_data *nfa, void *data) {
@@ -54,7 +146,9 @@ static int cb(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
       assert(sizeof(dst) >= INET_ADDRSTRLEN &&
              sizeof(dst) >= INET6_ADDRSTRLEN);
       if (inet_ntop(af, src, dst, sizeof(dst))) {
-        printf("dst: %s\n", dst);
+        u_int32_t outdev = nfq_get_outdev(nfa);
+        fprintf(stderr, "dst: %s outdev: %d\n", dst, outdev);
+        wake(dst, outdev);
       }
     }
   }
