@@ -45,6 +45,14 @@ define Device/tplink_archer-vr1200v-v2
 endef
 TARGET_DEVICES += tplink_archer-vr1200v-v2
 
+define Device/tplink_vc220-g3u-v2
+  DEVICE_VENDOR := TP-Link
+  DEVICE_MODEL := VC220 G3u
+  DEVICE_VARIANT := v2
+  DEVICE_DTS := en751221_tplink_vc220-g3u-v2
+endef
+TARGET_DEVICES += tplink_vc220-g3u-v2
+
 define Device/zyxel_pmg5617ga
   DEVICE_VENDOR := Zyxel
   DEVICE_MODEL := PMG5617GA
