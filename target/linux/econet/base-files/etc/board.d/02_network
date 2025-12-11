@@ -1,0 +1,23 @@
+. /lib/functions.sh
+. /lib/functions/uci-defaults.sh
+. /lib/functions/system.sh
+
+econet_setup_macs()
+{
+	local board="$1"
+
+	case $board in
+	tplink,vc220-g3u)
+		lan_mac=$(macaddr_add "$(mtd_get_mac_binary romfile 0x2000)" 6)
+		;;
+	esac
+
+	[ -n "$lan_mac" ] && ucidef_set_interface_macaddr "lan" $lan_mac
+}
+
+board_config_update
+board=$(board_name)
+econet_setup_macs $board
+board_config_flush
+
+exit 0
