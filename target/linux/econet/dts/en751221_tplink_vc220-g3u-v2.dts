@@ -36,6 +36,16 @@
 			label = "romfile";
 			reg = <0x20000 0x80000>;
 			read-only;
+			nvmem-layout {
+				compatible = "fixed-layout";
+				#address-cells = <1>;
+				#size-cells = <1>;
+				macaddr_romfile_2000: macaddr@2000 {
+					compatible = "mac-base";
+					reg = <0x2000 0x6>;
+					#nvmem-cell-cells = <1>;
+				};
+			};
 		};
 		partition@a0000 {
 			label = "config";
@@ -68,4 +78,10 @@
 		/* After the last partition there is some spare space which might be used
 		 * by BMT */
 	};
+};
+
+&gmac0 {
+	status = "okay";
+	nvmem-cells = <&macaddr_romfile_2000 6>;
+	nvmem-cell-names = "mac-address";
 };
