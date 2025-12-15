@@ -85,3 +85,11 @@
 	nvmem-cells = <&macaddr_romfile_2000 6>;
 	nvmem-cell-names = "mac-address";
 };
+
+&pcie0 {
+	status = "okay";
+};
+
+&pcie1 {
+	status = "okay";
+};
